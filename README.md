@@ -1,56 +1,97 @@
-# Welcome to your Expo app 👋
+# StreakUp — Habit and Fitness Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+StreakUp is a premium, high-aesthetic React Native application designed to help users track their habits, schedule workouts, monitor progress, and build streaks. Built using Expo TypeScript, Firebase (Auth + Firestore), and React Native Reanimated.
 
-## Get started
+---
 
-1. Install dependencies
+## App Concept & Features
 
-   ```bash
-   npm install
-   ```
+StreakUp leverages gamification to keep users engaged and motivated:
+- **Streak Multipliers**: Build consecutive days of completed habits to multiply your visual status level.
+- **Fitness Tracking**: Record workouts (duration, calories, distance) and pair them with active habits.
+- **Aesthetic Visualizations**: Dynamic progress charts and rich, custom dark mode styling with glassmorphism touches.
+- **Real-time Sync**: Synced securely via Firebase Auth and Firestore with offline-first support.
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Navigation Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```mermaid
+graph TD
+    Root[Root layout: app/_layout.tsx] --> TabsLayout[Tabs Layout: app/tabs/_layout.tsx]
+    TabsLayout --> TodayTab[Today Tab: app/tabs/index.tsx]
+    TabsLayout --> HabitsTab[Habits Tab: app/tabs/habits.tsx]
+    TabsLayout --> StatsTab[Stats Tab: app/tabs/stats.tsx]
+    TabsLayout --> SettingsTab[Settings Tab: app/tabs/settings.tsx]
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-### Other setup steps
+## Planned Firebase Data Model
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```mermaid
+erDiagram
+    USERS {
+        string uid PK
+        string email
+        string displayName
+        string photoURL
+        int points
+        int streakDays
+        string createdAt
+    }
+    HABITS {
+        string id PK
+        string userId FK
+        string name
+        string description
+        string category
+        string frequency
+        int[] frequencyDays
+        int currentStreak
+        int longestStreak
+        string lastCompletedDate
+        string[] completionHistory
+        string createdAt
+    }
+    WORKOUTS {
+        string id PK
+        string userId FK
+        string title
+        string type
+        int duration
+        int caloriesBurned
+        float distance
+        string date
+        string notes
+        string createdAt
+    }
 
-## Learn more
+    USERS ||--o{ HABITS : "manages"
+    USERS ||--o{ WORKOUTS : "logs"
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Setup Prerequisites
 
-## Join the community
+To run this app locally:
+1. **Node.js**: Make sure Node.js (v18+) is installed.
+2. **Expo Go**: Install the Expo Go app on your iOS or Android physical device, or set up an emulator.
+3. **Firebase Project**:
+   - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
+   - Enable **Authentication** (Email/Password) and **Cloud Firestore**.
+   - Create a Web App configuration to get your Firebase credentials.
+4. **Environment Variables**:
+   - Copy `.env.example` to `.env` in the root directory.
+   - Replace the placeholder credentials with your actual Firebase Web Config values.
 
-Join our community of developers creating universal apps.
+### Installation & Launching
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+# Install dependencies
+npm install
+
+# Start the Expo development server
+npm run start
+```
