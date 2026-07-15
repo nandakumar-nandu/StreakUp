@@ -48,4 +48,46 @@ journey
       Navigate to Stats tab: 4: User
       Examine habit completion percentage: 4: User
       Inspect longest active streak record: 5: User
-```
+---
+
+## Creating a Habit (Step-by-Step)
+
+Here is a step-by-step walkthrough of creating and tracking a habit in the new UI:
+
+1. **Open the Creation Form**:
+   On the **Habits** screen, tap the floating `+` button in the bottom-right corner. This slides up the `CreateHabitModal`.
+   
+2. **Configure Habit Fields**:
+   - **Name**: Type a name (e.g., "Drink 3L Water" or "Go for a Run").
+   - **Emoji**: Pick an icon from the 20 preset grid (e.g., 🏃, 🧘, 💧).
+   - **Color**: Select one of the 8 preset color rings. This color will be used for the card indicator border and active action buttons.
+   - **Frequency**: Choose between `Daily`, `Weekdays`, `Weekends`, or `Custom`.
+   - **Reminder**: Toggle the switch. If active, pick a target hour, minute, and AM/PM marker (e.g., `08:30 AM`).
+
+3. **Save and Render**:
+   - Tap **Create**. The modal closes, resets all form entries, and inserts the new habit at the top of your list.
+   - The habit list displays a `HabitCard` matching your custom accent, emoji, name, and reminder time.
+
+4. **Mark Complete**:
+   - Click the checkmark bubble on the right side of the card.
+   - The card's right border highlights, the checkmark fills with your habit's accent color, and the fire icon increments by `1` (indicating a streak update). Tapping again reverts the state.
+
+---
+
+## Daily Habit Tracking (Commit 3)
+
+The **Today** dashboard is where you complete your routine tasks and watch your daily progress progress:
+
+1. **Dashboard Overview**:
+   - The screen shows the formatted current date at the top.
+   - A large, central **Progress Ring** displays the current completion status (e.g., `1/3` completed) and animates the progress arc in real time.
+
+2. **Check-off Interactions**:
+   - Tap any habit on the checklist to toggle its completion state.
+   - **Bounce Animation**: The checkbox triggers a scale spring bounce (expanding and contracting naturally) and transitions its border and background fill colors.
+   - **Arc Morph Animation**: The top progress ring smoothly transitions to the new value (e.g., from `33%` to `66%`) using a 500ms duration timing ease-out transition.
+
+3. **Celebration Explosion**:
+   - When the final remaining habit is checked off, the progress ring completes to 100%, and a celebratory trophy banner emerges saying "Streak Maintained!".
+   - Simultaneously, a **Confetti Cannon** fires, showering the screen with colored confetti particles to celebrate your daily milestone.
+

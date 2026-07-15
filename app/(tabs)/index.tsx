@@ -1,42 +1,261 @@
-import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  ScrollView, 
+  SafeAreaView, 
+  TouchableOpacity,
+  Dimensions
+} from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { colors, spacing, borderRadius } from '@/constants/theme';
+import { colors, spacing, borderRadius, typography, shadows } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { Habit } from '@/types';
+import { ProgressRing } from '@/components/ProgressRing';
+import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
+import ConfettiCannon from 'react-native-confetti-cannon';
+
+const getTodayString = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getFormattedDate = () => {
+  const options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric' };
+  return new Date().toLocaleDateString('en-US', options);
+};
+
+// Initial state matching habits list for a seamless app experience
+const INITIAL_HABITS: Habit[] = [
+  {
+    id: '1',
+    name: 'Morning Meditation',
+    emoji: '🧘',
+    color: '#9b59b6', // Amethyst Purple
+    frequency: 'daily',
+    reminderTime: '07:00 AM',
+    createdAt: new Date().toISOString(),
+    streak: 5,
+    completions: [
+      new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    ]
+  },
+  {
+    id: '2',
+    name: 'Drink 3L Water',
+    emoji: '💧',
+    color: '#1e90ff', // Electric Blue
+    frequency: 'daily',
+    reminderTime: '09:00 AM',
+    createdAt: new Date().toISOString(),
+    streak: 12,
+    completions: [] // Uncompleted today initially
+  },
+  {
+    id: '3',
+    name: 'Cardio Workout',
+    emoji: '🏃',
+    color: '#FF4757', // Coral Red
+    frequency: 'weekdays',
+    reminderTime: '06:00 PM',
+    createdAt: new Date().toISOString(),
+    streak: 0,
+    completions: []
+  }
+];
 
 export default function TodayScreen() {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
+  
+  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
+  const confettiRef = useRef<ConfettiCannon | null>(null);
+  
+  const todayStr = getTodayString();
+  const totalCount = habits.length;
+  const completedCount = habits.filter(h => h.completions.includes(todayStr)).length;
+  const progressRatio = totalCount > 0 ? completedCount / totalCount : 0;
+  const allCompleted = totalCount > 0 && completedCount === totalCount;
+  
+  // Track previous completion state to trigger confetti only on transition to 100%
+  const prevAllCompleted = useRef(allCompleted);
+
+  useEffect(() => {
+    if (allCompleted && !prevAllCompleted.current) {
+      // Trigger the confetti cannon explosion!
+      confettiRef.current?.start();
+    }
+    prevAllCompleted.current = allCompleted;
+  }, [allCompleted]);
+
+  const handleToggleComplete = (habitId: string) => {
+    setHabits(prevHabits =>
+      prevHabits.map(habit => {
+        if (habit.id !== habitId) return habit;
+        
+        const isCompletedToday = habit.completions.includes(todayStr);
+        let updatedCompletions: string[];
+        let updatedStreak = habit.streak;
+
+        if (isCompletedToday) {
+          // Uncheck habit
+          updatedCompletions = habit.completions.filter(c => c !== todayStr);
+          updatedStreak = Math.max(0, habit.streak - 1);
+        } else {
+          // Check habit
+          updatedCompletions = [...habit.completions, todayStr];
+          updatedStreak = habit.streak + 1;
+        }
+
+        return {
+          ...habit,
+          completions: updatedCompletions,
+          streak: updatedStreak
+        };
+      })
+    );
+  };
+
+  const ringLabel = `${completedCount}/${totalCount}`;
+  const windowWidth = Dimensions.get('window').width;
 
   return (
-    <ScrollView 
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-        <View style={styles.headerRow}>
-          <Ionicons 
-            name="flash" 
-            size={40} 
-            color={colorScheme === 'dark' ? colors.primary.dark : colors.primary.light} 
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      
+      {/* Confetti Cannon Container (Full Screen overlay layer) */}
+      <ConfettiCannon
+        ref={confettiRef}
+        count={150}
+        origin={{ x: windowWidth / 2, y: -20 }}
+        autoStart={false}
+        fadeOut={true}
+        fallSpeed={3000}
+      />
+
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Date Header */}
+        <View style={styles.header}>
+          <Text style={[styles.dateText, { color: themeColors.textMuted }]}>
+            {getFormattedDate()}
+          </Text>
+          <Text style={[styles.greetingText, { color: themeColors.text }]}>
+            Today's Progress
+          </Text>
+        </View>
+
+        {/* Circular Progress Section */}
+        <View style={[styles.progressCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <ProgressRing 
+            progress={progressRatio} 
+            size={140}
+            strokeWidth={14}
+            label={ringLabel}
           />
-          <View style={styles.titleContainer}>
-            <Text style={[styles.cardTitle, { color: themeColors.text }]}>Welcome to StreakUp!</Text>
-            <Text style={[styles.cardSubtitle, { color: themeColors.textMuted }]}>Keep your momentum going</Text>
+          <View style={styles.progressDetail}>
+            {allCompleted ? (
+              <View style={styles.celebrateBadge}>
+                <Text style={styles.celebrateTitle}>🔥 Perfect Day!</Text>
+                <Text style={[styles.celebrateSubtitle, { color: themeColors.textMuted }]}>
+                  All goals complete. Keep it up!
+                </Text>
+              </View>
+            ) : (
+              <View>
+                <Text style={[styles.statusTitle, { color: themeColors.text }]}>
+                  {totalCount - completedCount} habits remaining
+                </Text>
+                <Text style={[styles.statusSubtitle, { color: themeColors.textMuted }]}>
+                  {Math.round(progressRatio * 100)}% of your habits done
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
-        <Text style={[styles.bodyText, { color: themeColors.text }]}>
-          This is your <Text style={{ fontWeight: 'bold', color: colorScheme === 'dark' ? colors.primary.dark : colors.primary.light }}>Today</Text> tab. Here, you'll see your daily habits checklists, streak status, and fitness targets for the day.
-        </Text>
+        {/* "All Done!" Banner Card */}
+        {allCompleted && (
+          <View style={[styles.celebrationCard, { backgroundColor: colorScheme === 'dark' ? 'rgba(46,229,157,0.12)' : 'rgba(46,213,115,0.08)', borderColor: colorScheme === 'dark' ? colors.secondary.dark : colors.secondary.light }]}>
+            <Ionicons name="trophy" size={32} color={colorScheme === 'dark' ? colors.secondary.dark : colors.secondary.light} />
+            <View style={styles.celebrationTextContainer}>
+              <Text style={[styles.celebrationTitleText, { color: themeColors.text }]}>Streak Maintained!</Text>
+              <Text style={[styles.celebrationSubText, { color: themeColors.textMuted }]}>You've locked in your habit streaks for today.</Text>
+            </View>
+          </View>
+        )}
 
-        <View style={[styles.badge, { backgroundColor: colorScheme === 'dark' ? 'rgba(255,71,87,0.15)' : 'rgba(255,71,87,0.1)' }]}>
-          <Text style={[styles.badgeText, { color: colorScheme === 'dark' ? colors.primary.dark : colors.primary.light }]}>
-            🔥 Ready to start your streak?
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+        {/* Habit List Section */}
+        <Text style={[styles.listHeader, { color: themeColors.textMuted }]}>TODAY'S CHECKLIST</Text>
+        
+        {habits.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="sparkles-outline" size={48} color={themeColors.textMuted} />
+            <Text style={[styles.emptyText, { color: themeColors.text }]}>All clear for today</Text>
+            <Text style={[styles.emptySubtitle, { color: themeColors.textMuted }]}>
+              There are no habits scheduled for today. Add routines in the Habits tab!
+            </Text>
+          </View>
+        ) : (
+          habits.map(habit => {
+            const isCompleted = habit.completions.includes(todayStr);
+            const tint = `${habit.color}15`;
+
+            return (
+              <TouchableOpacity
+                key={habit.id}
+                activeOpacity={0.9}
+                style={[
+                  styles.habitItem,
+                  { 
+                    backgroundColor: themeColors.card,
+                    borderColor: isCompleted ? habit.color : themeColors.border
+                  }
+                ]}
+                onPress={() => handleToggleComplete(habit.id)}
+              >
+                <View style={styles.itemRow}>
+                  {/* Category Emoji Box */}
+                  <View style={[styles.emojiBox, { backgroundColor: tint }]}>
+                    <Text style={styles.emojiText}>{habit.emoji}</Text>
+                  </View>
+                  
+                  {/* Name and Streak */}
+                  <View style={styles.itemDetails}>
+                    <Text style={[
+                      styles.itemName, 
+                      { 
+                        color: themeColors.text,
+                        textDecorationLine: isCompleted ? 'line-through' : 'none',
+                        opacity: isCompleted ? 0.6 : 1
+                      }
+                    ]} numberOfLines={1}>
+                      {habit.name}
+                    </Text>
+                    <Text style={[styles.itemStreak, { color: colors.warning.light }]}>
+                      🔥 {habit.streak} day streak
+                    </Text>
+                  </View>
+
+                  {/* Custom Animated Checkbox */}
+                  <AnimatedCheckbox
+                    checked={isCompleted}
+                    onPress={() => handleToggleComplete(habit.id)}
+                    activeColor={habit.color}
+                    size={28}
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          })
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -44,53 +263,134 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  contentContainer: {
+  scrollContent: {
     padding: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexGrow: 1,
+    paddingBottom: spacing.huge,
   },
-  card: {
-    width: '100%',
-    maxWidth: 500,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    padding: spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  header: {
     marginBottom: spacing.lg,
   },
-  titleContainer: {
-    marginLeft: spacing.md,
+  dateText: {
+    fontSize: typography.sizes.bodyMedium,
+    fontWeight: 'semibold',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  cardTitle: {
-    fontSize: 22,
+  greetingText: {
+    fontSize: typography.sizes.h1,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  progressCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.xl,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+    ...shadows.md,
+  },
+  progressDetail: {
+    flex: 1,
+    marginLeft: spacing.xl,
+  },
+  statusTitle: {
+    fontSize: typography.sizes.bodyLarge,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  statusSubtitle: {
+    fontSize: typography.sizes.bodySmall,
+  },
+  celebrateBadge: {
+    justifyContent: 'center',
+  },
+  celebrateTitle: {
+    fontSize: typography.sizes.h3,
+    fontWeight: 'bold',
+    color: '#2ED573',
+    marginBottom: 2,
+  },
+  celebrateSubtitle: {
+    fontSize: typography.sizes.bodySmall,
+  },
+  celebrationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
+  },
+  celebrationTextContainer: {
+    marginLeft: spacing.md,
+    flex: 1,
+  },
+  celebrationTitleText: {
+    fontSize: typography.sizes.bodyLarge,
     fontWeight: 'bold',
   },
-  cardSubtitle: {
-    fontSize: 14,
+  celebrationSubText: {
+    fontSize: typography.sizes.bodySmall,
     marginTop: 2,
   },
-  bodyText: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: spacing.xl,
+  listHeader: {
+    fontSize: typography.sizes.caption,
+    fontWeight: 'bold',
+    letterSpacing: 1.5,
+    marginBottom: spacing.md,
+    marginTop: spacing.sm,
   },
-  badge: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+  habitItem: {
     borderRadius: borderRadius.md,
-    alignSelf: 'flex-start',
+    borderWidth: 1,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    ...shadows.sm,
   },
-  badgeText: {
-    fontSize: 14,
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emojiBox: {
+    width: 42,
+    height: 42,
+    borderRadius: borderRadius.round,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  emojiText: {
+    fontSize: 20,
+  },
+  itemDetails: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  itemName: {
+    fontSize: typography.sizes.bodyLarge,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  itemStreak: {
+    fontSize: typography.sizes.bodySmall,
     fontWeight: 'semibold',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.huge,
+    marginTop: spacing.xl,
+  },
+  emptyText: {
+    fontSize: typography.sizes.bodyLarge,
+    fontWeight: 'bold',
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  emptySubtitle: {
+    fontSize: typography.sizes.bodyMedium,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
   },
 });

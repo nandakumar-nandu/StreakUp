@@ -17,20 +17,32 @@ export interface UserProfile {
 export type HabitCategory = 'fitness' | 'mind' | 'nutrition' | 'sleep' | 'work' | 'other';
 
 export interface Habit {
+  /** Unique identifier for the habit */
   id: string;
-  userId: string;
+  
+  /** User-defined name of the habit (e.g., "Read 10 Pages") */
   name: string;
-  description?: string;
-  category: HabitCategory;
-  frequency: 'daily' | 'weekly' | 'custom';
-  frequencyDays?: number[]; // e.g., [1, 3, 5] for Mon, Wed, Fri (0 = Sunday, 1 = Monday...)
+  
+  /** Selected icon emoji representing the habit */
+  emoji: string;
+  
+  /** Hex color value representing the theme/accent of the habit card */
+  color: string;
+  
+  /** Execution schedule frequency: 'daily' | 'weekdays' | 'weekends' | 'custom' */
+  frequency: 'daily' | 'weekdays' | 'weekends' | 'custom';
+  
+  /** Daily reminder time formatted as 'HH:MM AM/PM' (e.g. '08:30 AM') or null if disabled */
+  reminderTime: string | null;
+  
+  /** Timestamp when the habit was created (ISO format) */
   createdAt: string;
   
-  // Streak tracking
-  currentStreak: number;
-  longestStreak: number;
-  lastCompletedDate?: string; // YYYY-MM-DD format
-  completionHistory: string[]; // List of YYYY-MM-DD dates completed
+  /** Current active streak count of consecutive completions */
+  streak: number;
+  
+  /** List of completion dates stored as 'YYYY-MM-DD' strings */
+  completions: string[];
 }
 
 export interface Workout {

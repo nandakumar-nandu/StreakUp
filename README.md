@@ -27,6 +27,26 @@ graph TD
 
 ---
 
+## Habits Screen Component Structure
+
+```mermaid
+graph TD
+    HabitsScreen[Habits Screen: app/tabs/habits.tsx] --> SummaryCard[Summary Card: active habits count]
+    HabitsScreen --> HabitList[List ScrollView]
+    HabitsScreen --> FAB[Floating Action Button +]
+    
+    HabitList --> HabitCard[HabitCard Component]
+    
+    FAB --> |Press| CreateModal[CreateHabitModal Component]
+    CreateModal --> NameInput[Habit Name TextInput]
+    CreateModal --> EmojiGrid[Emoji Picker: 20 Grid]
+    CreateModal --> ColorPicker[Color Picker: 8 Swatches]
+    CreateModal --> FreqSelector[Frequency Segment]
+    CreateModal --> ReminderToggle[Reminder Switch & Custom Time Picker]
+```
+
+---
+
 ## Planned Firebase Data Model
 
 ```mermaid
@@ -85,6 +105,8 @@ To run this app locally:
 4. **Environment Variables**:
    - Copy `.env.example` to `.env` in the root directory.
    - Replace the placeholder credentials with your actual Firebase Web Config values.
+5. **React Native Reanimated Setup**:
+   - Reanimated is pre-installed. If rebuilding from scratch, ensure `react-native-reanimated/plugin` is configured in your babel plugins array, and clear your bundler cache with `npx expo start --clear` if worklet compilation warnings arise.
 
 ### Installation & Launching
 
