@@ -47,48 +47,29 @@ graph TD
 
 ---
 
-## Planned Firebase Data Model
+## Cloud Firestore Data Model Structure
 
 ```mermaid
-erDiagram
-    USERS {
-        string uid PK
-        string email
-        string displayName
-        string photoURL
-        int points
-        int streakDays
-        string createdAt
-    }
-    HABITS {
-        string id PK
-        string userId FK
-        string name
-        string description
-        string category
-        string frequency
-        int[] frequencyDays
-        int currentStreak
-        int longestStreak
-        string lastCompletedDate
-        string[] completionHistory
-        string createdAt
-    }
-    WORKOUTS {
-        string id PK
-        string userId FK
-        string title
-        string type
-        int duration
-        int caloriesBurned
-        float distance
-        string date
-        string notes
-        string createdAt
-    }
-
-    USERS ||--o{ HABITS : "manages"
-    USERS ||--o{ WORKOUTS : "logs"
+graph TD
+    usersCol[users Collection] --> userDoc[User Document: uid]
+    userDoc --> habitsSub[habits Subcollection]
+    userDoc --> completionsSub[completions Subcollection]
+    
+    habitsSub --> habitDoc[Habit Document: habitId]
+    habitDoc --> hId[id: string]
+    habitDoc --> hName[name: string]
+    habitDoc --> hEmoji[emoji: string]
+    habitDoc --> hColor[color: string]
+    habitDoc --> hFreq[frequency: string]
+    habitDoc --> hRemind[reminderTime: string | null]
+    habitDoc --> hCreated[createdAt: string]
+    habitDoc --> hStreak[streak: number]
+    habitDoc --> hCompletions[completions: string[] -- cached dates]
+    
+    completionsSub --> compDateDoc[Date Document: YYYY-MM-DD]
+    compDateDoc --> habitsSub2[habits Subcollection]
+    habitsSub2 --> compHabitDoc[Completed Habit Document: habitId]
+    compHabitDoc --> completedAt[completedAt: string]
 ```
 
 ---

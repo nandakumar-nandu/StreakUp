@@ -2,6 +2,18 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [0.4.0] - 2026-07-17 11:30 (Asia/Kolkata)
+
+### Added
+- Configured detailed comments for all credentials in `lib/firebase.ts` explaining variables and console locations.
+- Developed `useAuth` hook and `<AuthProvider>` inside `hooks/useAuth.ts` with JSDoc typing details.
+- Implemented `(auth)/login` and `(auth)/register` screens with dark/light mode responsive form validation and loaders.
+- Configured an authentication routing guard in `app/_layout.tsx` leveraging `useSegments()` to redirect unauthenticated users.
+- Created Firestore CRUD database operations helper library `lib/habitsService.ts` utilizing real-time subscriptions (`subscribeToHabits`, `subscribeToCompletions`).
+- Migrated Today dashboard (`app/(tabs)/index.tsx`), Habits dashboard (`app/(tabs)/habits.tsx`), and Settings dashboard (`app/(tabs)/settings.tsx`) to pull and sync data in real-time from Firestore.
+- Added habit deletion functionality directly inside cards (`components/HabitCard.tsx`).
+- Detailed the subcollection design and cached data model in `README.md`, `WALKTHROUGH.md`, and `CHANGELOG.md`.
+
 ## [0.3.0] - 2026-07-15 16:18 (Asia/Kolkata)
 
 ### Added

@@ -6,7 +6,8 @@ import {
   ScrollView, 
   SafeAreaView, 
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { colors, spacing, borderRadius, typography, shadows } from '@/constants/theme';
@@ -14,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Habit } from '@/types';
 import { ProgressRing } from '@/components/ProgressRing';
 import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
+import { useAuth } from '@/hooks/useAuth';
+import { subscribeToHabits, subscribeToCompletions, toggleHabitCompletion } from '@/lib/habitsService';
 import ConfettiCannon from 'react-native-confetti-cannon';
 
 const getTodayString = () => {
@@ -29,104 +32,92 @@ const getFormattedDate = () => {
   return new Date().toLocaleDateString('en-US', options);
 };
 
-// Initial state matching habits list for a seamless app experience
-const INITIAL_HABITS: Habit[] = [
-  {
-    id: '1',
-    name: 'Morning Meditation',
-    emoji: '🧘',
-    color: '#9b59b6', // Amethyst Purple
-    frequency: 'daily',
-    reminderTime: '07:00 AM',
-    createdAt: new Date().toISOString(),
-    streak: 5,
-    completions: [
-      new Date(Date.now() - 86400000).toISOString().split('T')[0]
-    ]
-  },
-  {
-    id: '2',
-    name: 'Drink 3L Water',
-    emoji: '💧',
-    color: '#1e90ff', // Electric Blue
-    frequency: 'daily',
-    reminderTime: '09:00 AM',
-    createdAt: new Date().toISOString(),
-    streak: 12,
-    completions: [] // Uncompleted today initially
-  },
-  {
-    id: '3',
-    name: 'Cardio Workout',
-    emoji: '🏃',
-    color: '#FF4757', // Coral Red
-    frequency: 'weekdays',
-    reminderTime: '06:00 PM',
-    createdAt: new Date().toISOString(),
-    streak: 0,
-    completions: []
-  }
-];
-
 export default function TodayScreen() {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
-  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
+  const { user } = useAuth();
+  
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const confettiRef = useRef<ConfettiCannon | null>(null);
   
   const todayStr = getTodayString();
   const totalCount = habits.length;
-  const completedCount = habits.filter(h => h.completions.includes(todayStr)).length;
+  const completedCount = habits.filter(h => completedIds.includes(h.id)).length;
   const progressRatio = totalCount > 0 ? completedCount / totalCount : 0;
   const allCompleted = totalCount > 0 && completedCount === totalCount;
   
   // Track previous completion state to trigger confetti only on transition to 100%
   const prevAllCompleted = useRef(allCompleted);
 
+  // Synchronize habits and completions from Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    setLoading(true);
+
+    // Subscribe to all habits definitions
+    const unsubscribeHabits = subscribeToHabits(user.uid, (loadedHabits) => {
+      setHabits(loadedHabits);
+      setLoading(false);
+    });
+
+    // Subscribe to today's completion logs
+    const unsubscribeCompletions = subscribeToCompletions(user.uid, todayStr, (ids) => {
+      setCompletedIds(ids);
+    });
+
+    return () => {
+      unsubscribeHabits();
+      unsubscribeCompletions();
+    };
+  }, [user, todayStr]);
+
+  // Confetti explosion effect on perfect completion days
   useEffect(() => {
     if (allCompleted && !prevAllCompleted.current) {
-      // Trigger the confetti cannon explosion!
       confettiRef.current?.start();
     }
     prevAllCompleted.current = allCompleted;
   }, [allCompleted]);
 
-  const handleToggleComplete = (habitId: string) => {
-    setHabits(prevHabits =>
-      prevHabits.map(habit => {
-        if (habit.id !== habitId) return habit;
-        
-        const isCompletedToday = habit.completions.includes(todayStr);
-        let updatedCompletions: string[];
-        let updatedStreak = habit.streak;
+  const handleToggleComplete = async (habit: Habit) => {
+    if (!user) return;
 
-        if (isCompletedToday) {
-          // Uncheck habit
-          updatedCompletions = habit.completions.filter(c => c !== todayStr);
-          updatedStreak = Math.max(0, habit.streak - 1);
-        } else {
-          // Check habit
-          updatedCompletions = [...habit.completions, todayStr];
-          updatedStreak = habit.streak + 1;
-        }
-
-        return {
-          ...habit,
-          completions: updatedCompletions,
-          streak: updatedStreak
-        };
-      })
-    );
+    const isCompleted = completedIds.includes(habit.id);
+    
+    try {
+      // Toggle in Firestore database (this updates the completions collection and habit streak)
+      await toggleHabitCompletion(
+        user.uid,
+        habit.id,
+        todayStr,
+        !isCompleted,
+        habit.streak
+      );
+    } catch (error) {
+      console.error("Error toggling completion:", error);
+    }
   };
 
   const ringLabel = `${completedCount}/${totalCount}`;
   const windowWidth = Dimensions.get('window').width;
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.loadingCenter, { backgroundColor: themeColors.background }]}>
+        <ActivityIndicator size="large" color={colorScheme === 'dark' ? colors.primary.dark : colors.primary.light} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       
-      {/* Confetti Cannon Container (Full Screen overlay layer) */}
+      {/* Confetti Cannon overlay */}
       <ConfettiCannon
         ref={confettiRef}
         count={150}
@@ -181,7 +172,13 @@ export default function TodayScreen() {
 
         {/* "All Done!" Banner Card */}
         {allCompleted && (
-          <View style={[styles.celebrationCard, { backgroundColor: colorScheme === 'dark' ? 'rgba(46,229,157,0.12)' : 'rgba(46,213,115,0.08)', borderColor: colorScheme === 'dark' ? colors.secondary.dark : colors.secondary.light }]}>
+          <View style={[
+            styles.celebrationCard, 
+            { 
+              backgroundColor: colorScheme === 'dark' ? 'rgba(46,229,157,0.12)' : 'rgba(46,213,115,0.08)', 
+              borderColor: colorScheme === 'dark' ? colors.secondary.dark : colors.secondary.light 
+            }
+          ]}>
             <Ionicons name="trophy" size={32} color={colorScheme === 'dark' ? colors.secondary.dark : colors.secondary.light} />
             <View style={styles.celebrationTextContainer}>
               <Text style={[styles.celebrationTitleText, { color: themeColors.text }]}>Streak Maintained!</Text>
@@ -203,7 +200,7 @@ export default function TodayScreen() {
           </View>
         ) : (
           habits.map(habit => {
-            const isCompleted = habit.completions.includes(todayStr);
+            const isCompleted = completedIds.includes(habit.id);
             const tint = `${habit.color}15`;
 
             return (
@@ -217,7 +214,7 @@ export default function TodayScreen() {
                     borderColor: isCompleted ? habit.color : themeColors.border
                   }
                 ]}
-                onPress={() => handleToggleComplete(habit.id)}
+                onPress={() => handleToggleComplete(habit)}
               >
                 <View style={styles.itemRow}>
                   {/* Category Emoji Box */}
@@ -245,7 +242,7 @@ export default function TodayScreen() {
                   {/* Custom Animated Checkbox */}
                   <AnimatedCheckbox
                     checked={isCompleted}
-                    onPress={() => handleToggleComplete(habit.id)}
+                    onPress={() => handleToggleComplete(habit)}
                     activeColor={habit.color}
                     size={28}
                   />
@@ -262,6 +259,10 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingCenter: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollContent: {
     padding: spacing.lg,

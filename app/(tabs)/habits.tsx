@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -6,7 +6,8 @@ import {
   ScrollView, 
   TouchableOpacity, 
   SafeAreaView, 
-  Platform 
+  Platform,
+  ActivityIndicator
 } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { colors, spacing, borderRadius, typography, shadows } from '@/constants/theme';
@@ -14,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Habit } from '@/types';
 import { HabitCard } from '@/components/HabitCard';
 import { CreateHabitModal } from '@/components/CreateHabitModal';
+import { useAuth } from '@/hooks/useAuth';
+import { subscribeToHabits, createHabit, deleteHabit, toggleHabitCompletion } from '@/lib/habitsService';
 
 const getTodayString = () => {
   const date = new Date();
@@ -23,103 +26,79 @@ const getTodayString = () => {
   return `${year}-${month}-${day}`;
 };
 
-// Initial mock habits for a complete visual experience
-const INITIAL_HABITS: Habit[] = [
-  {
-    id: '1',
-    name: 'Morning Meditation',
-    emoji: '🧘',
-    color: '#9b59b6', // Amethyst Purple
-    frequency: 'daily',
-    reminderTime: '07:00 AM',
-    createdAt: new Date().toISOString(),
-    streak: 5,
-    completions: [
-      // Mock past completions
-      new Date(Date.now() - 86400000 * 4).toISOString().split('T')[0],
-      new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0],
-      new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-      new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0],
-    ]
-  },
-  {
-    id: '2',
-    name: 'Drink 3L Water',
-    emoji: '💧',
-    color: '#1e90ff', // Electric Blue
-    frequency: 'daily',
-    reminderTime: '09:00 AM',
-    createdAt: new Date().toISOString(),
-    streak: 12,
-    completions: [
-      getTodayString(), // Already completed today in mock state
-      new Date(Date.now() - 86400000 * 1).toISOString().split('T')[0],
-    ]
-  },
-  {
-    id: '3',
-    name: 'Cardio Workout',
-    emoji: '🏃',
-    color: '#FF4757', // Coral Red
-    frequency: 'weekdays',
-    reminderTime: '06:00 PM',
-    createdAt: new Date().toISOString(),
-    streak: 0,
-    completions: []
-  }
-];
-
 export default function HabitsScreen() {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
-  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
+  const { user } = useAuth();
+  
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
 
   const todayStr = getTodayString();
 
-  const handleToggleComplete = (habitId: string) => {
-    setHabits(prevHabits => 
-      prevHabits.map(habit => {
-        if (habit.id !== habitId) return habit;
+  // Listen to Firestore habits collection changes in real-time
+  useEffect(() => {
+    if (!user) return;
 
-        const isCompletedToday = habit.completions.includes(todayStr);
-        let updatedCompletions: string[];
-        let updatedStreak = habit.streak;
+    setLoading(true);
+    const unsubscribe = subscribeToHabits(user.uid, (loadedHabits) => {
+      setHabits(loadedHabits);
+      setLoading(false);
+    });
 
-        if (isCompletedToday) {
-          // Remove completion for today
-          updatedCompletions = habit.completions.filter(c => c !== todayStr);
-          updatedStreak = Math.max(0, habit.streak - 1);
-        } else {
-          // Add completion for today
-          updatedCompletions = [...habit.completions, todayStr];
-          updatedStreak = habit.streak + 1;
-        }
+    return unsubscribe;
+  }, [user]);
 
-        return {
-          ...habit,
-          completions: updatedCompletions,
-          streak: updatedStreak
-        };
-      })
-    );
+  const handleToggleComplete = async (habit: Habit) => {
+    if (!user) return;
+
+    const isCompletedToday = habit.completions.includes(todayStr);
+    
+    try {
+      await toggleHabitCompletion(
+        user.uid,
+        habit.id,
+        todayStr,
+        !isCompletedToday,
+        habit.streak
+      );
+    } catch (error) {
+      console.error("Error toggling habit completion:", error);
+    }
   };
 
-  const handleCreateHabit = (newHabitData: Omit<Habit, 'id' | 'createdAt' | 'streak' | 'completions'>) => {
-    const newHabit: Habit = {
-      ...newHabitData,
-      id: Math.random().toString(36).substring(2, 9),
-      createdAt: new Date().toISOString(),
-      streak: 0,
-      completions: []
-    };
-    
-    setHabits(prev => [newHabit, ...prev]);
-    setModalVisible(false);
+  const handleCreateHabit = async (newHabitData: Omit<Habit, 'id' | 'createdAt' | 'streak' | 'completions'>) => {
+    if (!user) return;
+
+    try {
+      await createHabit(user.uid, newHabitData);
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error creating habit:", error);
+    }
+  };
+
+  const handleDeleteHabit = async (habitId: string) => {
+    if (!user) return;
+
+    try {
+      await deleteHabit(user.uid, habitId);
+    } catch (error) {
+      console.error("Error deleting habit:", error);
+    }
   };
 
   const activeHabitsCount = habits.length;
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.loadingCenter, { backgroundColor: themeColors.background }]}>
+        <ActivityIndicator size="large" color={colorScheme === 'dark' ? colors.primary.dark : colors.primary.light} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
@@ -150,7 +129,8 @@ export default function HabitsScreen() {
               key={habit.id}
               habit={habit}
               isCompletedToday={habit.completions.includes(todayStr)}
-              onToggleComplete={() => handleToggleComplete(habit.id)}
+              onToggleComplete={() => handleToggleComplete(habit)}
+              onDelete={() => handleDeleteHabit(habit.id)}
             />
           ))
         )}
@@ -184,6 +164,10 @@ export default function HabitsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingCenter: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollContent: {
     padding: spacing.lg,

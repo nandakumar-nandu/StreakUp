@@ -91,3 +91,21 @@ The **Today** dashboard is where you complete your routine tasks and watch your 
    - When the final remaining habit is checked off, the progress ring completes to 100%, and a celebratory trophy banner emerges saying "Streak Maintained!".
    - Simultaneously, a **Confetti Cannon** fires, showering the screen with colored confetti particles to celebrate your daily milestone.
 
+---
+
+## Firebase Auth & Firestore Persistence (Commit 4)
+
+All user accounts and habit tracker operations are fully integrated and synced with Firebase services:
+
+1. **Authentication Screens**:
+   - Access is restricted. When the app loads, if no user is signed in, they are redirected to `app/(auth)/login.tsx`.
+   - Users can register using email, display name, and password at `app/(auth)/register.tsx`. Successful signup logs them in automatically.
+   - User names and emails are dynamically shown under the **Settings** tab. A secure "Log Out" button clears local storage persistence and resets the view back to the Login screen.
+
+2. **Unidirectional Firestore Synchronization**:
+   - Mock data lists have been completely migrated to Cloud Firestore.
+   - Creating a habit writes a definition document to `users/{uid}/habits/{habitId}`.
+   - Checking/unchecking a habit writes/deletes a document in the subcollection `users/{uid}/completions/{date}/habits/{habitId}` and updates the `streak` counter and completion array on the habit definition document itself.
+   - Real-time changes are fetched using `onSnapshot` listeners. Offline cache support is enabled, ensuring operations function smoothly when network access is lost.
+
+

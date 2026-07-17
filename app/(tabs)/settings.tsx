@@ -1,12 +1,23 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { colors, spacing, borderRadius } from '@/constants/theme';
+import { colors, spacing, borderRadius, typography } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
+  
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
 
   return (
     <ScrollView 
@@ -14,25 +25,49 @@ export default function SettingsScreen() {
       contentContainerStyle={styles.contentContainer}
     >
       <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+        
+        {/* Header Section */}
         <View style={styles.headerRow}>
           <Ionicons 
-            name="settings" 
+            name="settings-outline" 
             size={40} 
-            color={themeColors.textMuted} 
+            color={colorScheme === 'dark' ? colors.primary.dark : colors.primary.light} 
           />
           <View style={styles.titleContainer}>
             <Text style={[styles.cardTitle, { color: themeColors.text }]}>Settings</Text>
-            <Text style={[styles.cardSubtitle, { color: themeColors.textMuted }]}>Manage profile, theme & sync</Text>
+            <Text style={[styles.cardSubtitle, { color: themeColors.textMuted }]}>Manage profile & synchronization</Text>
           </View>
         </View>
 
-        <Text style={[styles.bodyText, { color: themeColors.text }]}>
-          This is your <Text style={{ fontWeight: 'bold' }}>Settings</Text> tab. Here, you'll manage your account (login, register via Firebase Auth), toggle light/dark theme preference manually, and set daily reminders/notifications.
-        </Text>
+        {/* User Account Info */}
+        {user ? (
+          <View style={[styles.profileSection, { borderColor: themeColors.border }]}>
+            <Text style={[styles.sectionHeader, { color: themeColors.textMuted }]}>SIGNED IN AS</Text>
+            <Text style={[styles.displayName, { color: themeColors.text }]}>
+              {user.displayName || 'No Name Set'}
+            </Text>
+            <Text style={[styles.email, { color: themeColors.textMuted }]}>
+              {user.email}
+            </Text>
+          </View>
+        ) : null}
 
+        {/* Action Button Section */}
+        {user ? (
+          <TouchableOpacity 
+            style={[styles.logoutBtn, { backgroundColor: colors.primary.light }]}
+            onPress={handleLogout}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.logoutBtnText}>Log Out</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {/* Version Info */}
         <View style={[styles.badge, { backgroundColor: themeColors.border }]}>
           <Text style={[styles.badgeText, { color: themeColors.text }]}>
-            ⚙️ Version 0.1.0 (Scaffold)
+            ⚙️ Version 0.4.0 (Firebase Persistent)
           </Text>
         </View>
       </View>
@@ -65,7 +100,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   titleContainer: {
     marginLeft: spacing.md,
@@ -78,10 +113,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 2,
   },
-  bodyText: {
-    fontSize: 16,
-    lineHeight: 24,
+  profileSection: {
+    borderTopWidth: 1,
+    paddingVertical: spacing.lg,
     marginBottom: spacing.xl,
+  },
+  sectionHeader: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+  },
+  displayName: {
+    fontSize: typography.sizes.bodyLarge,
+    fontWeight: 'bold',
+  },
+  email: {
+    fontSize: typography.sizes.bodyMedium,
+    marginTop: 2,
+  },
+  logoutBtn: {
+    height: 48,
+    borderRadius: borderRadius.md,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  logoutBtnText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   badge: {
     paddingVertical: spacing.md,

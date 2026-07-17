@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { colors, spacing, borderRadius, typography, shadows } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Habit } from '@/types';
@@ -9,14 +9,28 @@ interface HabitCardProps {
   habit: Habit;
   isCompletedToday: boolean;
   onToggleComplete: () => void;
+  onDelete?: () => void;
 }
 
-export function HabitCard({ habit, isCompletedToday, onToggleComplete }: HabitCardProps) {
+export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete }: HabitCardProps) {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
   // Custom transparent tint of the habit's primary color for emoji background
   const emojiBgTint = `${habit.color}1C`; // ~11% opacity in Hex
+
+  const handleDeletePress = () => {
+    if (!onDelete) return;
+    
+    Alert.alert(
+      "Delete Habit",
+      `Are you sure you want to permanently delete "${habit.name}"? This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: onDelete }
+      ]
+    );
+  };
 
   return (
     <View style={[
@@ -26,7 +40,7 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete }: HabitCa
         borderColor: isCompletedToday ? habit.color : themeColors.border 
       }
     ]}>
-      {/* Accent Top Border or Left Indicator */}
+      {/* Accent Left Indicator */}
       <View style={[styles.colorIndicator, { backgroundColor: habit.color }]} />
 
       <View style={styles.contentRow}>
@@ -67,13 +81,14 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete }: HabitCa
             </View>
           )}
           
-          {/* Complete Button */}
+          {/* Complete Checkbox */}
           <TouchableOpacity
             style={[
               styles.checkButton,
               { 
                 borderColor: habit.color,
-                backgroundColor: isCompletedToday ? habit.color : 'transparent' 
+                backgroundColor: isCompletedToday ? habit.color : 'transparent',
+                marginRight: onDelete ? spacing.sm : 0
               }
             ]}
             onPress={onToggleComplete}
@@ -85,6 +100,17 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete }: HabitCa
               <View style={[styles.innerCircle, { borderColor: habit.color }]} />
             )}
           </TouchableOpacity>
+
+          {/* Delete Button */}
+          {onDelete && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={handleDeletePress}
+              hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+            >
+              <Ionicons name="trash-outline" size={20} color="#FF4757" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -182,4 +208,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     opacity: 0.3,
   },
+  deleteButton: {
+    padding: 4,
+  },
 });
+export default HabitCard;
