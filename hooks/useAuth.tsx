@@ -7,7 +7,8 @@ import {
   signOut, 
   onAuthStateChanged 
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 /**
  * Interface representing the exposed authentication state and operations.
@@ -54,6 +55,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // When the app initializes or the user signs in/out, the listener fires.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        // Backfill user profile document in Firestore if not already present
+        const userRef = doc(db, 'users', currentUser.uid);
+        getDoc(userRef).then((snap) => {
+          if (!snap.exists()) {
+            setDoc(userRef, {
+              uid: currentUser.uid,
+              email: currentUser.email || '',
+              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || 'StreakUp User',
+              photoURL: currentUser.photoURL || null,
+              createdAt: new Date().toISOString(),
+              points: 0,
+              streakDays: 0
+            }, { merge: true });
+          }
+        }).catch(err => console.error("Error backfilling user doc:", err));
+      }
       setLoading(false);
     });
 
@@ -84,6 +102,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     if (credential.user) {
       await updateProfile(credential.user, { displayName });
+      // Create user profile doc in Firestore immediately
+      await setDoc(doc(db, 'users', credential.user.uid), {
+        uid: credential.user.uid,
+        email: email,
+        displayName: displayName,
+        photoURL: null,
+        createdAt: new Date().toISOString(),
+        points: 0,
+        streakDays: 0
+      });
     }
     return credential;
   };

@@ -22,7 +22,21 @@ graph TD
     TabsLayout --> TodayTab[Today Tab: app/tabs/index.tsx]
     TabsLayout --> HabitsTab[Habits Tab: app/tabs/habits.tsx]
     TabsLayout --> StatsTab[Stats Tab: app/tabs/stats.tsx]
+    TabsLayout --> SocialTab[Social Tab: app/tabs/social.tsx]
     TabsLayout --> SettingsTab[Settings Tab: app/tabs/settings.tsx]
+```
+
+---
+
+## Social Feature Data Flow
+
+```mermaid
+graph LR
+    UserA[User A] -->|sendFriendRequest| Request[Friend Request: pending]
+    Request -->|acceptFriendRequest| UserB[User B]
+    UserB -->|Establishes| Friends[Friends Subcollection: UserA & UserB]
+    Friends -->|Completing Habit| Leaderboard[Leaderboard: friendLeaderboards/entries]
+    Friends -->|Duel Challenge| Duel[Streak Challenges: head-to-head]
 ```
 
 ---
@@ -54,6 +68,9 @@ graph TD
     usersCol[users Collection] --> userDoc[User Document: uid]
     userDoc --> habitsSub[habits Subcollection]
     userDoc --> completionsSub[completions Subcollection]
+    userDoc --> friendsSub[friends Subcollection]
+    userDoc --> requestsSub[friendRequests Subcollection]
+    userDoc --> settingsSub[settings/privacy Document]
     
     habitsSub --> habitDoc[Habit Document: habitId]
     habitDoc --> hId[id: string]
@@ -65,11 +82,36 @@ graph TD
     habitDoc --> hCreated[createdAt: string]
     habitDoc --> hStreak[streak: number]
     habitDoc --> hCompletions[completions: string[] -- cached dates]
+    habitDoc --> hPublic[isPublic: boolean]
+    habitDoc --> hVis[visibility: string]
     
     completionsSub --> compDateDoc[Date Document: YYYY-MM-DD]
     compDateDoc --> habitsSub2[habits Subcollection]
     habitsSub2 --> compHabitDoc[Completed Habit Document: habitId]
     compHabitDoc --> completedAt[completedAt: string]
+
+    friendsSub --> friendDoc[Friend Document: friendUid]
+    friendDoc --> fUid[uid: string]
+    friendDoc --> fName[displayName: string]
+    friendDoc --> fEmail[email: string]
+    friendDoc --> fStreak[currentStreak: number]
+    
+    requestsSub --> reqDoc[Request Document: requestId]
+    reqDoc --> rFrom[fromUid: string]
+    reqDoc --> rTo[toUid: string]
+    reqDoc --> rStatus[status: string]
+
+    rootChallenges[challenges Collection] --> challengeDoc[Challenge Document: challengeId]
+    challengeDoc --> cCreator[creatorId: string]
+    challengeDoc --> cOpponent[opponentId: string]
+    challengeDoc --> cStatus[status: string]
+    challengeDoc --> cComps[creatorCompletions / opponentCompletions: string[]]
+    
+    rootLeaderboards[friendLeaderboards Collection] --> lbHabit[Habit Document: habitName]
+    lbHabit --> lbEntries[entries Subcollection]
+    lbEntries --> lbEntryDoc[Entry Document: uid]
+    lbEntryDoc --> lbStreak[currentStreak: number]
+    lbEntryDoc --> lbRate[completionRate: number]
 ```
 
 ---

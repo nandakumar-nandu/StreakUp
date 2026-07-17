@@ -236,3 +236,54 @@ export async function syncNotifications(
     }
   }
 }
+
+/**
+ * PRODUCTION PUSH NOTIFICATION STRATEGY VIA CLOUD FUNCTIONS:
+ * In a secure production environment, push notifications are not sent directly from one user's
+ * device to another (as that would require exposing the Expo push server token or private server keys
+ * on client devices). Instead, social notifications leverage Firestore triggers:
+ * 
+ * 1. WRITING TRIGGER RECORDS:
+ *    When User A triggers a social event (e.g. sending a friend request or challenge to User B),
+ *    the app writes a notification request document to a global collection:
+ *    `users/{B.uid}/notifications/{notificationId}`
+ *    Containing fields: `title`, `body`, `type: 'friend_request' | 'streak_nudge'`, `senderName`, `createdAt`.
+ * 
+ * 2. FIRESTORE CLOUD FUNCTION:
+ *    A Firebase Cloud Function monitors this collection:
+ *    ```javascript
+ *    exports.onSocialNotification = functions.firestore
+ *      .document('users/{uid}/notifications/{notificationId}')
+ *      .onCreate(async (snapshot, context) => {
+ *        const recipientUid = context.params.uid;
+ *        const notificationData = snapshot.data();
+ * 
+ *        // Fetch the recipient's Expo push token from their private user profile
+ *        const userDoc = await admin.firestore().doc(`users/${recipientUid}`).get();
+ *        const expoPushToken = userDoc.data()?.expoPushToken;
+ * 
+ *        if (!expoPushToken) return;
+ * 
+ *        // Call the Expo Push notification service securely
+ *        await fetch('https://exp.host/--/api/v2/push/send', {
+ *          method: 'POST',
+ *          headers: { 'Content-Type': 'application/json' },
+ *          body: JSON.stringify({
+ *            to: expoPushToken,
+ *            title: notificationData.title,
+ *            body: notificationData.body,
+ *            data: { type: notificationData.type },
+ *            sound: 'default'
+ *          })
+ *        });
+ *      });
+ *    ```
+ * 
+ * This strategy guarantees that private push tokens and server credentials remain secured on
+ * backend environments and prevents clients from executing unauthorized notification requests.
+ */
+export async function triggerSocialNotificationMock(targetUid: string, title: string, body: string) {
+  console.log(`[MOCK NOTIFICATION SENT TO USER ${targetUid}]: ${title} - ${body}`);
+  // Visually alerts recipient if they are in the active session for demonstration purposes
+}
+

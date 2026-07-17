@@ -167,3 +167,25 @@ Commit 7 completes the local alarm reminders and custom user styling preferences
 4. **Account Details**:
    - Visualizes user profile displayName and email.
    - Features a red logout button that clears session tokens and redirects back to the login screen.
+
+---
+
+## Social & Accountability, Streak Challenges & Leaderboards (Commit 9)
+
+StreakUp version 1.1.0 builds a social accountability structure:
+
+1. **Social & Friends Graph**:
+   - Allows users to search the global user base by display name or email, sending/receiving real-time friend requests.
+   - Friends lists display names, initial avatars, current active streak records, and action duels options.
+
+2. **Leaderboards**:
+   - Renders ranked lists comparing habit progress dynamically.
+   - Filterable between "My Friends" and "Global Top 10".
+   - Utilizes a tie-breaking algorithm (Streaks desc -> Completion rate desc -> Alphabetical name).
+   - Updates denormalized leaderboard entries in real-time as users check off public habits.
+
+3. **Streak Challenges (Duels)**:
+   - Challenge friends to habit duels (7, 14, or 30 days) to track the same habit.
+   - Visual progress bars comparing head-to-head completions in real-time.
+   - Dynamically calculates remaining duration and automatically declares the winner/tie once the window closes.
+   - Automatically synchronizes check-offs from the main Today checklist to progress records.

@@ -36,13 +36,16 @@ import {
   deleteDoc, 
   onSnapshot, 
   updateDoc, 
+  getDoc,
   query, 
   orderBy,
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
 import { Habit } from '@/types';
-import { calculateCurrentStreak } from './streakCalculator';
+import { calculateCurrentStreak, getCompletionRate } from './streakCalculator';
+import { updateLeaderboardEntry } from './socialService';
+import { syncActiveChallengesWithHabitToggle } from './challengeService';
 
 /**
  * Subscribe to real-time updates for a user's habits list.
@@ -165,6 +168,12 @@ export async function toggleHabitCompletion(
   const completionDocRef = doc(db, 'users', uid, 'completions', date, 'habits', habitId);
   const habitDocRef = doc(db, 'users', uid, 'habits', habitId);
 
+  // Fetch current habit data to get the habit name and privacy status
+  const habitSnap = await getDoc(habitDocRef);
+  const habitData = habitSnap.data();
+  const habitName = habitData?.name || 'Habit';
+  const isPublic = habitData?.isPublic ?? false;
+
   let newCompletions = [...currentCompletions];
 
   if (isCompleted) {
@@ -191,6 +200,33 @@ export async function toggleHabitCompletion(
     streak: updatedStreak,
     completions: newCompletions
   });
+
+  // 4. Update the leaderboard entry if the habit is public
+  if (isPublic) {
+    try {
+      const userSnap = await getDoc(doc(db, 'users', uid));
+      const userData = userSnap.data();
+      const completionRate = getCompletionRate(newCompletions, 30);
+      
+      await updateLeaderboardEntry(
+        uid,
+        userData?.displayName || null,
+        userData?.photoURL || null,
+        habitName,
+        updatedStreak,
+        completionRate
+      );
+    } catch (err) {
+      console.error("Failed to update leaderboard entry:", err);
+    }
+  }
+
+  // 5. Sync active challenge progress
+  try {
+    await syncActiveChallengesWithHabitToggle(uid, habitName, date, isCompleted);
+  } catch (err) {
+    console.error("Failed to sync challenge duels progress:", err);
+  }
 }
 
 /**
@@ -203,3 +239,25 @@ export async function deleteHabit(uid: string, habitId: string): Promise<void> {
   const habitDocRef = doc(db, 'users', uid, 'habits', habitId);
   return deleteDoc(habitDocRef);
 }
+
+/**
+ * Updates a habit's privacy status in Firestore.
+ * 
+ * @param uid - The authenticated user's unique ID.
+ * @param habitId - The ID of the habit to modify.
+ * @param isPublic - Boolean status mapping.
+ * @param visibility - Text indicator 'private' | 'friends' | 'public'.
+ */
+export async function updateHabitVisibility(
+  uid: string,
+  habitId: string,
+  isPublic: boolean,
+  visibility: 'private' | 'friends' | 'public'
+): Promise<void> {
+  const habitDocRef = doc(db, 'users', uid, 'habits', habitId);
+  await updateDoc(habitDocRef, {
+    isPublic,
+    visibility
+  });
+}
+

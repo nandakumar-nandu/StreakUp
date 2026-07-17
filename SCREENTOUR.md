@@ -90,3 +90,22 @@ graph TD
     - **Longest Streak**: Historical record with a trophy icon.
     - **30-Day Rate**: Consistency percentage calculated for the trailing 30 days.
   - *Calendar Heatmap*: Integrated calendar displaying completions. Each completed day is painted with a solid circle matching the habit's specific accent color. Supports horizontal month swiping.
+
+### 6. Social Tab (`app/(tabs)/social.tsx`)
+- **Visuals**: Modern multi-segmented dashboard splitting content into Friends, Leaderboard, and Challenges sub-screens.
+- **Content**:
+  - *Friends View*:
+    - **User Search**: TextInput and search button matching email or names.
+    - **Friend Requests Inbox**: Renders pending requests with instant Accept/Decline action buttons.
+    - **Friends List**: Lists user friends showing avatar circles, names, active streak counts, and "Duel" trigger buttons.
+  - *Leaderboard View*:
+    - **Habit Filter Bar**: Simple input matching target habits.
+    - **Scope Toggles**: Segmented buttons switching between "My Friends" and "Global Top 10".
+    - **Rankings Table**: Chronological list showing ranks (🥇, 🥈, 🥉 medals for top 3), avatar initial circles, names, active streaks, and completion consistency. Highlights the current user's row in red.
+  - *Challenges (Duels) View*:
+    - **Active Duels Cards**: Head-to-head tracking cards comparing days completed, showing dueling progress ratios graphically, and displaying remaining days.
+    - **Pending Invitations**: Accept/Decline choices for incoming duels.
+    - **Winner Declarations**: Highlights duels completed, declaring the winner (You, Opponent, or Tie).
+  - *Challenge Proposal Modal*:
+    - Modal popup choosing target habit names and duration periods (7, 14, 30 days) to launch invitations.
+

@@ -22,6 +22,9 @@ import {
   checkNotificationPermissionStatus, 
   syncNotifications 
 } from '@/lib/notificationsManager';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import * as Haptics from 'expo-haptics';
 
 const getTodayString = () => {
   const date = new Date();
@@ -47,6 +50,11 @@ export default function SettingsScreen() {
   const [permissionChecking, setPermissionChecking] = useState(true);
   const [isMasterEnabled, setIsMasterEnabled] = useState(true);
   const [disabledHabitsMap, setDisabledHabitsMap] = useState<{ [habitId: string]: boolean }>({});
+
+  // Privacy States
+  const [profileVisibility, setProfileVisibility] = useState<'public' | 'friends' | 'private'>('public');
+  const [allowRequests, setAllowRequests] = useState(true);
+  const [showStreaks, setShowStreaks] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -81,8 +89,17 @@ export default function SettingsScreen() {
         if (disabled) {
           setDisabledHabitsMap(JSON.parse(disabled));
         }
+
+        // Fetch privacy settings from Firestore
+        const privacyDoc = await getDoc(doc(db, 'users', user.uid, 'settings', 'privacy'));
+        if (privacyDoc.exists()) {
+          const data = privacyDoc.data();
+          if (data.profileVisibility) setProfileVisibility(data.profileVisibility);
+          if (data.allowRequests !== undefined) setAllowRequests(data.allowRequests);
+          if (data.showStreaks !== undefined) setShowStreaks(data.showStreaks);
+        }
       } catch (e) {
-        console.error("Error loading notification settings:", e);
+        console.error("Error loading settings:", e);
       } finally {
         setPermissionChecking(false);
       }
@@ -137,6 +154,38 @@ export default function SettingsScreen() {
       await logout();
     } catch (error) {
       console.error("Error logging out:", error);
+    }
+  };
+
+  const handleUpdatePrivacy = async (key: string, value: any) => {
+    if (!user) return;
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (e) {}
+
+    let updatedVisibility = profileVisibility;
+    let updatedRequests = allowRequests;
+    let updatedStreaks = showStreaks;
+
+    if (key === 'visibility') {
+      setProfileVisibility(value);
+      updatedVisibility = value;
+    } else if (key === 'allowRequests') {
+      setAllowRequests(value);
+      updatedRequests = value;
+    } else if (key === 'showStreaks') {
+      setShowStreaks(value);
+      updatedStreaks = value;
+    }
+
+    try {
+      await setDoc(doc(db, 'users', user.uid, 'settings', 'privacy'), {
+        profileVisibility: updatedVisibility,
+        allowRequests: updatedRequests,
+        showStreaks: updatedStreaks
+      }, { merge: true });
+    } catch (e) {
+      console.error("Failed to update privacy settings:", e);
     }
   };
 
@@ -206,6 +255,65 @@ export default function SettingsScreen() {
                 </TouchableOpacity>
               );
             })}
+          </View>
+        </View>
+
+        {/* Privacy Settings Section */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textMuted }]}>PRIVACY SETTINGS</Text>
+        <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, ...shadows.sm, paddingHorizontal: 0 }]}>
+          {/* Profile Visibility Selector */}
+          <View style={[styles.privacySelectorRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: themeColors.border, paddingHorizontal: spacing.lg, paddingBottom: spacing.md }]}>
+            <Text style={[styles.inputLabel, { color: themeColors.text, marginBottom: spacing.sm }]}>PROFILE VISIBILITY</Text>
+            <View style={styles.themeSelector}>
+              {(['public', 'friends', 'private'] as const).map((mode) => {
+                const isActive = profileVisibility === mode;
+                const buttonBg = isActive 
+                  ? (colorScheme === 'dark' ? colors.primary.dark : colors.primary.light)
+                  : 'transparent';
+                const buttonText = isActive ? '#FFFFFF' : themeColors.text;
+
+                return (
+                  <TouchableOpacity
+                    key={mode}
+                    activeOpacity={0.8}
+                    style={[styles.themeBtn, { backgroundColor: buttonBg }]}
+                    onPress={() => handleUpdatePrivacy('visibility', mode)}
+                  >
+                    <Text style={[styles.themeBtnText, { color: buttonText }]}>
+                      {mode === 'public' ? 'Public' : mode === 'friends' ? 'Friends' : 'Private'}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Allow Friend Requests Switch */}
+          <View style={[styles.switchRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: themeColors.border, paddingHorizontal: spacing.lg }]}>
+            <View style={styles.switchLabelArea}>
+              <Ionicons name="person-add-outline" size={20} color={themeColors.text} style={{ marginRight: spacing.md }} />
+              <Text style={[styles.switchLabel, { color: themeColors.text }]}>Allow Friend Requests</Text>
+            </View>
+            <Switch
+              value={allowRequests}
+              onValueChange={(val) => handleUpdatePrivacy('allowRequests', val)}
+              trackColor={{ false: themeColors.border, true: colors.primary.light }}
+              thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
+            />
+          </View>
+
+          {/* Show Streaks Switch */}
+          <View style={[styles.switchRow, { paddingHorizontal: spacing.lg }]}>
+            <View style={styles.switchLabelArea}>
+              <Ionicons name="flame-outline" size={20} color={themeColors.text} style={{ marginRight: spacing.md }} />
+              <Text style={[styles.switchLabel, { color: themeColors.text }]}>Show Streaks to Friends</Text>
+            </View>
+            <Switch
+              value={showStreaks}
+              onValueChange={(val) => handleUpdatePrivacy('showStreaks', val)}
+              trackColor={{ false: themeColors.border, true: colors.primary.light }}
+              thumbColor={Platform.OS === 'android' ? '#FFFFFF' : undefined}
+            />
           </View>
         </View>
 
@@ -500,5 +608,14 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 12,
+  },
+  privacySelectorRow: {
+    paddingVertical: spacing.md,
+  },
+  inputLabel: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    marginBottom: spacing.xs,
   },
 });

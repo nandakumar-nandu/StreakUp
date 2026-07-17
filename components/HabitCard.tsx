@@ -11,9 +11,10 @@ interface HabitCardProps {
   onToggleComplete: () => void;
   onDelete?: () => void;
   onPress?: () => void;
+  onLongPress?: () => void;
 }
 
-export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete, onPress }: HabitCardProps) {
+export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete, onPress, onLongPress }: HabitCardProps) {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
@@ -38,6 +39,7 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete,
       activeOpacity={onPress ? 0.85 : 1}
       disabled={!onPress}
       onPress={onPress}
+      onLongPress={onLongPress}
       style={[
         styles.card, 
         { 
