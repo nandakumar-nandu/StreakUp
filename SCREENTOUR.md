@@ -61,12 +61,14 @@ graph TD
 - **Action**: Pressing "Create" validates the name and appends the habit, while "Cancel" discards changes and slides the modal down.
 
 ### 3. Stats Screen (`app/(tabs)/stats.tsx`)
-- **Visuals**: Completion analytics charts (weekly bar charts and streak timelines).
-- **Content**: Summarized KPIs:
-  - *Active Streak*: Current consecutive habit execution days.
-  - *Completion Rate*: Overall percentage.
-  - *Workout Stats*: Total workout minutes and calories.
-  - *Achievements*: Gamification medals unlocked.
+- **Visuals**: Modern analytics dashboard featuring responsive charts, progress indicators, and ranked lists. Built using native color-schemes.
+- **Content**:
+  - *KPI Cards*: Row of two visual summary boxes displaying:
+    - **Total Completed This Month**: Counter aggregating all habit check-offs in the current calendar month.
+    - **Best Weekday**: Displays the calendar weekday name where habit check-off frequency is highest.
+  - *Weekly Completion Bar Chart*: A React Native Chart Kit `BarChart` representing completion percentages for each day of the last 7 days.
+  - *Top Performance list*: Displays top 3 habits ranked by overall consistency rate, accompanied by a custom horizontal progress bar colored to match the habit's accent.
+  - *Active Streaks Leaderboard*: List of all habits ranked in descending order by current active streak. Features styled orange flame badges.
 
 ### 4. Settings Screen (`app/(tabs)/settings.tsx`)
 - **Visuals**: Clean card-based layout lists.

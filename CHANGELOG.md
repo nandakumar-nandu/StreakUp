@@ -2,6 +2,12 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [0.6.0] - 2026-07-17 13:30 (Asia/Kolkata)
+
+### Added
+- Created `/hooks/useStats.ts` custom hook to fetch and compute real-time Firestore habit statistics including weekly completion percentages, top performance rates, current streaks leaderboard, monthly totals, and best day of week metrics.
+- Redesigned the Stats tab (`app/(tabs)/stats.tsx`) incorporating a responsive `BarChart` using `react-native-chart-kit` mapped to theme colors, along with top habits progress bars and a scrollable leaderboard.
+
 ## [0.5.0] - 2026-07-17 13:25 (Asia/Kolkata)
 
 ### Added

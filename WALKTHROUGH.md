@@ -125,3 +125,23 @@ Commit 5 introduces advanced analytics and visual progress tools to review habit
    - The screen renders an analytical dashboard (Current Streak, Longest Streak, 30-Day Completion Rate) and an interactive monthly calendar heatmap.
    - Completed dates are painted on the calendar in green using the habit's custom color accent.
    - A header action bar includes custom back button navigation and habit deletion triggers.
+
+---
+
+## Statistics and Insights (Commit 6)
+
+StreakUp includes a comprehensive analytics dashboard on the **Stats** screen (`app/(tabs)/stats.tsx`):
+
+1. **Reactive Computation via `useStats` Hook**:
+   - The hook `hooks/useStats.ts` compiles statistics in real-time by listening to your Firestore habits.
+   - When you complete a task on the checklist, metrics instantly recalculate and redraw.
+
+2. **Weekly Completion Bar Chart**:
+   - Displays a custom `BarChart` using React Native Chart Kit showing progress over the last 7 days.
+   - Each bar represents a weekday (e.g. `Mon`, `Tue`) and its height matches the percentage of active habits completed on that day.
+
+3. **Analytics Metrics & Leaderboard**:
+   - **Monthly Total completions**: Tally of completions in the current calendar month.
+   - **Best Day of Week**: Shows the day you historically complete the most routines (e.g. `Wednesday`).
+   - **Leaderboard**: Lists your habits ranked in descending order by active streak, featuring flame count badges.
+   - **Top Performance**: Displays your top 3 habits with overall consistency percentages and custom progress indicators matching each habit's color.
