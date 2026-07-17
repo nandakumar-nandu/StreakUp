@@ -74,6 +74,32 @@ graph TD
 
 ---
 
+## Streak Calculation Algorithm Flowchart
+
+```mermaid
+graph TD
+    Start([Start: calculateCurrentStreak]) --> EmptyCheck{Is completions empty?}
+    EmptyCheck -- Yes --> ReturnZero[Return 0]
+    EmptyCheck -- No --> SortDates[Sort unique dates descending]
+    
+    SortDates --> GetDates[Get local date strings for Today and Yesterday]
+    GetDates --> CheckMostRecent{Is most recent completion Today or Yesterday?}
+    
+    CheckMostRecent -- No --> ReturnZero2[Return 0 - Streak is broken]
+    CheckMostRecent -- Yes --> InitStreak[Set streak = 0]
+    
+    InitStreak --> InitTracker[Set Tracker Date = most recent completion date]
+    InitTracker --> CheckTrackerInCompletions{Is Tracker Date in completions?}
+    
+    CheckTrackerInCompletions -- Yes --> Increment[Increment streak by 1]
+    Increment --> DecrementTracker[Subtract 1 day from Tracker Date]
+    DecrementTracker --> CheckTrackerInCompletions
+    
+    CheckTrackerInCompletions -- No --> ReturnStreak[Return streak]
+```
+
+---
+
 ## Setup Prerequisites
 
 To run this app locally:

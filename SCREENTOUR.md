@@ -75,3 +75,14 @@ graph TD
   - *Theme Toggle*: Swap between System, Light, and Dark modes.
   - *Firebase Integration*: Connection check status.
   - *Developer Settings*: Option to seed mock habits/workouts for testing.
+
+### 5. Habit Detail Screen (`app/habit/[id].tsx`)
+- **Visuals**: A dedicated detail view accessed by tapping a habit card body on the Habits dashboard list. Supports full light/dark themes.
+- **Content**:
+  - *Header*: Features a customized action bar containing a back navigation button, "Details" title, and a red trash/delete button.
+  - *Habit Identity*: Large visual layout displaying the habit's emoji, name, frequency, and reminder settings.
+  - *Stats Grid*: A three-column grid layout displaying:
+    - **Current Streak**: Consecutive completion days with a flame icon.
+    - **Longest Streak**: Historical record with a trophy icon.
+    - **30-Day Rate**: Consistency percentage calculated for the trailing 30 days.
+  - *Calendar Heatmap*: Integrated calendar displaying completions. Each completed day is painted with a solid circle matching the habit's specific accent color. Supports horizontal month swiping.

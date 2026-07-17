@@ -42,6 +42,7 @@ import {
   arrayRemove
 } from 'firebase/firestore';
 import { Habit } from '@/types';
+import { calculateCurrentStreak } from './streakCalculator';
 
 /**
  * Subscribe to real-time updates for a user's habits list.
@@ -118,44 +119,78 @@ export async function createHabit(
 }
 
 /**
+ * Subscribe to real-time updates for a single habit document.
+ * 
+ * @param uid - The authenticated user's unique ID.
+ * @param habitId - The ID of the habit to retrieve.
+ * @param callback - Function triggered when the habit document changes.
+ * @returns An unsubscribe function to clean up the listener.
+ */
+export function subscribeToHabit(
+  uid: string, 
+  habitId: string, 
+  callback: (habit: Habit | null) => void
+): () => void {
+  const habitRef = doc(db, 'users', uid, 'habits', habitId);
+  
+  return onSnapshot(habitRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback(docSnap.data() as Habit);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    console.error(`Error subscribing to habit ${habitId}: `, error);
+  });
+}
+
+/**
  * Toggle completion of a habit for a given date.
  * Writes a log entry in completions and updates cached streaks/completions on the habit.
+ * Calculates the current active streak dynamically based on the updated completions array.
  * 
  * @param uid - The authenticated user's unique ID.
  * @param habitId - The target habit ID.
  * @param date - The target date (YYYY-MM-DD).
  * @param isCompleted - True to complete, false to uncomplete.
- * @param currentStreak - The current streak count of the habit.
+ * @param currentCompletions - The array of current completion dates.
  */
 export async function toggleHabitCompletion(
   uid: string,
   habitId: string,
   date: string,
   isCompleted: boolean,
-  currentStreak: number
+  currentCompletions: string[]
 ): Promise<void> {
   const completionDocRef = doc(db, 'users', uid, 'completions', date, 'habits', habitId);
   const habitDocRef = doc(db, 'users', uid, 'habits', habitId);
+
+  let newCompletions = [...currentCompletions];
 
   if (isCompleted) {
     // 1. Write the daily audit log document
     await setDoc(completionDocRef, { completedAt: new Date().toISOString() });
     
-    // 2. Update denormalized cache on the habit document (increment streak & add date to completions array)
-    await updateDoc(habitDocRef, {
-      streak: currentStreak + 1,
-      completions: arrayUnion(date)
-    });
+    // Add date to our temporary array if not already present
+    if (!newCompletions.includes(date)) {
+      newCompletions.push(date);
+    }
   } else {
     // 1. Delete the daily audit log document
     await deleteDoc(completionDocRef);
     
-    // 2. Update denormalized cache on the habit document (decrement streak & remove date from completions array)
-    await updateDoc(habitDocRef, {
-      streak: Math.max(0, currentStreak - 1),
-      completions: arrayRemove(date)
-    });
+    // Remove date from our temporary array
+    newCompletions = newCompletions.filter(d => d !== date);
   }
+
+  // 2. Calculate the updated active streak dynamically
+  const updatedStreak = calculateCurrentStreak(newCompletions);
+
+  // 3. Update the habit document with the calculated streak and completions array
+  await updateDoc(habitDocRef, {
+    streak: updatedStreak,
+    completions: newCompletions
+  });
 }
 
 /**

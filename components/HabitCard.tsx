@@ -10,9 +10,10 @@ interface HabitCardProps {
   isCompletedToday: boolean;
   onToggleComplete: () => void;
   onDelete?: () => void;
+  onPress?: () => void;
 }
 
-export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete }: HabitCardProps) {
+export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete, onPress }: HabitCardProps) {
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
@@ -33,13 +34,18 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete 
   };
 
   return (
-    <View style={[
-      styles.card, 
-      { 
-        backgroundColor: themeColors.card, 
-        borderColor: isCompletedToday ? habit.color : themeColors.border 
-      }
-    ]}>
+    <TouchableOpacity
+      activeOpacity={onPress ? 0.85 : 1}
+      disabled={!onPress}
+      onPress={onPress}
+      style={[
+        styles.card, 
+        { 
+          backgroundColor: themeColors.card, 
+          borderColor: isCompletedToday ? habit.color : themeColors.border 
+        }
+      ]}
+    >
       {/* Accent Left Indicator */}
       <View style={[styles.colorIndicator, { backgroundColor: habit.color }]} />
 
@@ -113,7 +119,7 @@ export function HabitCard({ habit, isCompletedToday, onToggleComplete, onDelete 
           )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

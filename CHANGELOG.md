@@ -2,6 +2,16 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [0.5.0] - 2026-07-17 13:25 (Asia/Kolkata)
+
+### Added
+- Created `/lib/streakCalculator.ts` utility library implementing algorithms for `calculateCurrentStreak`, `calculateLongestStreak`, and `getCompletionRate` with detailed JSDoc comments.
+- Refactored Firestore database operations helper `toggleHabitCompletion` to perform dynamic streak calculations and update the habit's active streak on save.
+- Added dynamic single habit subscription helper `subscribeToHabit` to support detail screen updates in real-time.
+- Created dynamic habit detail screen `app/habit/[id].tsx` featuring a monthly calendar heatmap using `react-native-calendars` (completed days painted using habit custom color), current/longest streak badges, and a 30-day completion rate counter.
+- Integrated `onPress` callback in `HabitCard` to navigate to the dynamic detail route.
+- Registered the details dynamic route mapping inside the root layout Stack.
+
 ## [0.4.0] - 2026-07-17 11:30 (Asia/Kolkata)
 
 ### Added

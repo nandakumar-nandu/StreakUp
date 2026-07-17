@@ -62,7 +62,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /**
-   * Sign in an existing user.
+   * Sign in an existing user using email and password.
+   * 
+   * @param email - The user's registration email address.
+   * @param password - The user's account password.
+   * @returns A promise resolving to the logged-in Firebase UserCredential.
    */
   const login = async (email: string, password: string) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -70,6 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Register a new user and set their display name.
+   * 
+   * @param email - The registration email address.
+   * @param password - The account password.
+   * @param displayName - The user's visual profile name.
+   * @returns A promise resolving to the created Firebase UserCredential.
    */
   const register = async (email: string, password: string, displayName: string) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
@@ -81,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Terminate user session.
+   * 
+   * @returns A promise resolving when sign-out is complete.
    */
   const logout = async () => {
     return signOut(auth);

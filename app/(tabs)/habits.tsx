@@ -17,6 +17,7 @@ import { HabitCard } from '@/components/HabitCard';
 import { CreateHabitModal } from '@/components/CreateHabitModal';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToHabits, createHabit, deleteHabit, toggleHabitCompletion } from '@/lib/habitsService';
+import { useRouter } from 'expo-router';
 
 const getTodayString = () => {
   const date = new Date();
@@ -31,6 +32,7 @@ export default function HabitsScreen() {
   const themeColors = colorScheme === 'dark' ? colors.dark : colors.light;
   
   const { user } = useAuth();
+  const router = useRouter();
   
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ export default function HabitsScreen() {
         habit.id,
         todayStr,
         !isCompletedToday,
-        habit.streak
+        habit.completions
       );
     } catch (error) {
       console.error("Error toggling habit completion:", error);
@@ -131,6 +133,7 @@ export default function HabitsScreen() {
               isCompletedToday={habit.completions.includes(todayStr)}
               onToggleComplete={() => handleToggleComplete(habit)}
               onDelete={() => handleDeleteHabit(habit.id)}
+              onPress={() => router.push(`/habit/${habit.id}` as any)}
             />
           ))
         )}

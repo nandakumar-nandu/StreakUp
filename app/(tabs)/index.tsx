@@ -96,7 +96,7 @@ export default function TodayScreen() {
         habit.id,
         todayStr,
         !isCompleted,
-        habit.streak
+        habit.completions
       );
     } catch (error) {
       console.error("Error toggling completion:", error);

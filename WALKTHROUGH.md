@@ -108,4 +108,20 @@ All user accounts and habit tracker operations are fully integrated and synced w
    - Checking/unchecking a habit writes/deletes a document in the subcollection `users/{uid}/completions/{date}/habits/{habitId}` and updates the `streak` counter and completion array on the habit definition document itself.
    - Real-time changes are fetched using `onSnapshot` listeners. Offline cache support is enabled, ensuring operations function smoothly when network access is lost.
 
+---
 
+## Streaks and History (Commit 5)
+
+Commit 5 introduces advanced analytics and visual progress tools to review habit history:
+
+1. **Dynamic Streak Calculation**:
+   - The utility `lib/streakCalculator.ts` dynamically parses lists of completion date strings.
+   - **Current Streak**: Counts backwards day-by-day starting from the most recent completion. If the most recent completion is prior to yesterday, the streak instantly resets to `0`.
+   - **Longest Streak**: Compares calendar intervals chronological order. If gaps greater than 1 day occur, it saves the highest streak achieved and restarts tracking.
+   - **Completion Rate**: Computes the percentage of completed days relative to a rolling window (e.g. 30 days) to keep you informed of consistency.
+
+2. **Habit Detail Screen**:
+   - Tapping any card on the **Habits** screen navigates you to `app/habit/[id].tsx`.
+   - The screen renders an analytical dashboard (Current Streak, Longest Streak, 30-Day Completion Rate) and an interactive monthly calendar heatmap.
+   - Completed dates are painted on the calendar in green using the habit's custom color accent.
+   - A header action bar includes custom back button navigation and habit deletion triggers.
