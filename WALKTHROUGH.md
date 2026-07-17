@@ -145,3 +145,25 @@ StreakUp includes a comprehensive analytics dashboard on the **Stats** screen (`
    - **Best Day of Week**: Shows the day you historically complete the most routines (e.g. `Wednesday`).
    - **Leaderboard**: Lists your habits ranked in descending order by active streak, featuring flame count badges.
    - **Top Performance**: Displays your top 3 habits with overall consistency percentages and custom progress indicators matching each habit's color.
+
+---
+
+## Notifications and Settings (Commit 7)
+
+Commit 7 completes the local alarm reminders and custom user styling preferences:
+
+1. **Permission Explanation Flow**:
+   - The settings tab checks notification permissions. If missing, it draws a warnings alert box explaining why alerts are used, with an action trigger to "Grant Permission".
+
+2. **Expo Notification Reminders**:
+   - Configures daily local push alarms matching user-defined times on habits (uses calendar-based OS triggers for offline functionality).
+   - Dynamically schedules a "Streak at risk!" notification at 8:00 PM today if a habit has `streak > 3` and is not yet completed today. If the checklist transitions to completed, today's risk alarm is instantly cancelled and rescheduled starting tomorrow.
+
+3. **Habit and Theme Preferences**:
+   - Master Switch: Disables/enables reminders globally.
+   - Individual Toggles: List of all active routines to toggle reminders independently.
+   - Persistent Dark Mode: Segments control (System, Light, Dark) saved in `AsyncStorage`. All application interfaces listen to the Theme Provider context and morph color schemes instantly.
+
+4. **Account Details**:
+   - Visualizes user profile displayName and email.
+   - Features a red logout button that clears session tokens and redirects back to the login screen.

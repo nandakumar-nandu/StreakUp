@@ -2,6 +2,15 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [0.7.0] - 2026-07-17 13:35 (Asia/Kolkata)
+
+### Added
+- Integrated `expo-notifications` local push reminders, scheduling daily habit notifications at user-configured times.
+- Implemented a "Streak at risk!" warning notification firing at 8:00 PM if a habit with a streak > 3 is not yet checked off today.
+- Developed `/lib/notificationsManager.ts` helper detailing how Expo's calendar trigger maps to native operating system alarm modules.
+- Refactored theme management into a Context-driven `ThemeProvider` (inside `hooks/useColorScheme.tsx`) allowing users to choose system defaults or manual dark/light mode overrides, persisting preferences in `AsyncStorage`.
+- Redesigned the Settings screen (`app/(tabs)/settings.tsx`) featuring notification permission explanation cards, a global notification master switch, individual habit reminder toggles, visual theme buttons, and account credentials metadata.
+
 ## [0.6.0] - 2026-07-17 13:30 (Asia/Kolkata)
 
 ### Added

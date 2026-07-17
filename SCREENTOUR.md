@@ -71,12 +71,14 @@ graph TD
   - *Active Streaks Leaderboard*: List of all habits ranked in descending order by current active streak. Features styled orange flame badges.
 
 ### 4. Settings Screen (`app/(tabs)/settings.tsx`)
-- **Visuals**: Clean card-based layout lists.
+- **Visuals**: Clean card-based layouts containing preference lists, toggles, and permission warning banners. Supports dynamic theme switching.
 - **Content**:
-  - *Profile Section*: User name, email, avatar image.
-  - *Theme Toggle*: Swap between System, Light, and Dark modes.
-  - *Firebase Integration*: Connection check status.
-  - *Developer Settings*: Option to seed mock habits/workouts for testing.
+  - *Profile Header*: Renders the user's name, email, and a colored avatar circle with their initials.
+  - *Theme Preference Bar*: Horizontal selection buttons (System, Light, Dark) representing manual color scheme overrides persisted in `AsyncStorage`.
+  - *Permission Status Card*: Orange info box prompting the user to grant push permission if they haven't already.
+  - *Global Notifications Switch*: Master switch row for toggling all daily reminders.
+  - *Habit Reminders List*: Lists all user habits showing their names, category emojis, and configured times, with individual switches to toggle reminders independently.
+  - *Account Actions*: Includes a styled log out list item button highlighting in red to clear sessions.
 
 ### 5. Habit Detail Screen (`app/habit/[id].tsx`)
 - **Visuals**: A dedicated detail view accessed by tapping a habit card body on the Habits dashboard list. Supports full light/dark themes.

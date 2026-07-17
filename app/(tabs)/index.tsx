@@ -18,6 +18,7 @@ import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToHabits, subscribeToCompletions, toggleHabitCompletion } from '@/lib/habitsService';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { syncNotifications } from '@/lib/notificationsManager';
 
 const getTodayString = () => {
   const date = new Date();
@@ -75,6 +76,13 @@ export default function TodayScreen() {
       unsubscribeCompletions();
     };
   }, [user, todayStr]);
+
+  // Sync scheduled push notifications (reminders & risk alerts) reactively
+  useEffect(() => {
+    if (user && habits.length > 0) {
+      syncNotifications(user.uid, habits, completedIds);
+    }
+  }, [user, habits, completedIds]);
 
   // Confetti explosion effect on perfect completion days
   useEffect(() => {

@@ -1,11 +1,23 @@
 import React, { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useColorScheme, ThemeProvider } from '@/hooks/useColorScheme';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '@/constants/theme';
+import * as Notifications from 'expo-notifications';
+
+// Configure how notifications are handled when the app is in the foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -43,21 +55,29 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function RootLayout() {
+function RootLayoutNav() {
   const colorScheme = useColorScheme();
   
   return (
+    <AuthGuard>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="habit/[id]" options={{ headerShown: false }} />
+      </Stack>
+    </AuthGuard>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <AuthGuard>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="habit/[id]" options={{ headerShown: false }} />
-          </Stack>
-        </AuthGuard>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
