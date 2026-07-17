@@ -1,0 +1,32 @@
+{
+  // Configuration settings for the EAS CLI client itself
+  "cli": {
+    // Restricts the EAS build CLI tool version allowed to compile this project
+    "version": ">= 10.0.0"
+  },
+  // Build profiles defining compilation configurations for different testing & store environments
+  "build": {
+    // Development profile: builds a debug APK/IPA containing the Expo Dev Client for live debugging
+    "development": {
+      // Bundles dev client module containing local packager tools and debugging overlay
+      "developmentClient": true,
+      // Sets distribution method to internal ad-hoc installs for registered test devices
+      "distribution": "internal"
+    },
+    // Preview profile: builds release builds for internal testing without development client overhead
+    "preview": {
+      // Sets distribution method to internal for sharing APK files directly
+      "distribution": "internal"
+    },
+    // Production profile: optimized release build compiled with production credentials and optimizations
+    "production": {
+      // Set to release mode distribution
+      "distribution": "store"
+    }
+  },
+  // Submission profiles defining configurations for publishing builds to digital stores
+  "submit": {
+    // Submission configuration for releasing apps on Google Play Store & Apple App Store
+    "production": {}
+  }
+}

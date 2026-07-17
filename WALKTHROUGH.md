@@ -4,9 +4,9 @@ This document details the user journey and guides you through the planned featur
 
 ---
 
-## App Overview & Planned Features (🚧)
+## App Overview & Core Features
 
-StreakUp is designed to be highly interactive and rewarding. Here is a list of features currently under construction:
+StreakUp is designed to be highly interactive and rewarding. Here is a summary of the core features included in the release:
 
 1. **🔒 Secure Authentication (Auth)**:
    - Email/password register & sign-in.

@@ -1,6 +1,6 @@
 # Screen Tour: StreakUp
 
-This document maps out the placeholder screens and details the layout structure for StreakUp.
+This document maps out the core screens and details the layout structure for StreakUp.
 
 ---
 

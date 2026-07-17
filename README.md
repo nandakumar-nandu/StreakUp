@@ -124,3 +124,40 @@ npm install
 # Start the Expo development server
 npm run start
 ```
+
+---
+
+## Google Play Store Build & Submission
+
+StreakUp is configured for native compilation and deployment using EAS (Expo Application Services). Follow these steps to build and submit your app for the Google Play Store:
+
+### 1. Prerequisites
+- Install the EAS CLI globally:
+  ```bash
+  npm install -g eas-cli
+  ```
+- Log in to your Expo account:
+  ```bash
+  eas login
+  ```
+- Link your local workspace to your EAS project:
+  ```bash
+  eas project:init
+  ```
+
+### 2. Configure Build Profiles (`eas.json`)
+The build profiles are configured in [eas.json](file:///d:/projects/StreakUp/eas.json). It defines development, preview (for APK testing), and production (for store submission) build setups.
+
+### 3. Generate Android App Bundle (.aab)
+To build a signed production Android App Bundle (`.aab`) for Google Play Store upload, run:
+```bash
+eas build --platform android --profile production
+```
+*EAS Build will handle key generation, package signing, and bundle compiling on secure cloud servers, returning a download link to your `.aab` file once complete.*
+
+### 4. Direct Store Submission
+If you have a Google Play Developer account and have configured your service account credentials, submit the compiled build directly from the CLI:
+```bash
+eas submit --platform android
+```
+Alternatively, download the `.aab` bundle from your Expo dashboard and manually upload it under the **Production** track inside the [Google Play Console](https://play.google.com/console/).

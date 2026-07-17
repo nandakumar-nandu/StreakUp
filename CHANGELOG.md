@@ -2,6 +2,15 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [1.0.0] - 2026-07-17 13:45 (Asia/Kolkata)
+
+### Added
+- Integrated tactile haptic feedback using `expo-haptics` to trigger subtle device vibrations on checkbox toggles, habit creation success, and major streak milestones (7, 30, and 100 days).
+- Implemented styled empty state dashboards with vector icons and instructions for empty Today schedules, empty Habits lists, and Stats screens.
+- Created `eas.json` containing detailed build configurations for development, preview, and production submission profiles.
+- Documented full Google Play Store release build instructions in `README.md`.
+- Finalized all onboarding documentation files (`WALKTHROUGH.md`, `SCREENTOUR.md`), removing all construction placeholders.
+
 ## [0.7.0] - 2026-07-17 13:35 (Asia/Kolkata)
 
 ### Added

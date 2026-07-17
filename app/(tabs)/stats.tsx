@@ -38,6 +38,25 @@ export default function StatsScreen() {
     );
   }
 
+  if (streakLeaderboard.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, styles.center, { backgroundColor: themeColors.background }]}>
+        <View style={styles.emptyFullScreen}>
+          <Ionicons 
+            name="analytics-outline" 
+            size={80} 
+            color={themeColors.textMuted} 
+            style={{ marginBottom: spacing.lg }} 
+          />
+          <Text style={[styles.emptyTitle, { color: themeColors.text }]}>No Analytics Available</Text>
+          <Text style={[styles.emptySubtitleText, { color: themeColors.textMuted }]}>
+            Start creating habits and checking them off daily! Once you record completions, we'll draw weekly progress charts, compile active streaks, and display your top performances here.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Color config for chart bars (Coral Primary)
   const barColor = colorScheme === 'dark' ? colors.primary.dark : colors.primary.light;
 
@@ -337,5 +356,23 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: typography.sizes.bodySmall,
     fontWeight: 'semibold',
+  },
+  emptyFullScreen: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+    maxWidth: 400,
+    alignSelf: 'center',
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  emptySubtitleText: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });

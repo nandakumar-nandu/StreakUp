@@ -18,6 +18,7 @@ import { CreateHabitModal } from '@/components/CreateHabitModal';
 import { useAuth } from '@/hooks/useAuth';
 import { subscribeToHabits, createHabit, deleteHabit, toggleHabitCompletion } from '@/lib/habitsService';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 
 const getTodayString = () => {
   const date = new Date();
@@ -59,6 +60,12 @@ export default function HabitsScreen() {
     const isCompletedToday = habit.completions.includes(todayStr);
     
     try {
+      Haptics.impactAsync(isCompletedToday ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Medium);
+    } catch (e) {
+      console.warn("Failed to trigger haptic feedback:", e);
+    }
+
+    try {
       await toggleHabitCompletion(
         user.uid,
         habit.id,
@@ -77,6 +84,11 @@ export default function HabitsScreen() {
     try {
       await createHabit(user.uid, newHabitData);
       setModalVisible(false);
+      try {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e) {
+        console.warn("Failed to trigger haptic feedback:", e);
+      }
     } catch (error) {
       console.error("Error creating habit:", error);
     }
@@ -119,7 +131,7 @@ export default function HabitsScreen() {
         {/* Habits List */}
         {habits.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="clipboard-outline" size={64} color={themeColors.textMuted} />
+            <Ionicons name="clipboard-outline" size={64} color={themeColors.textMuted} style={{ marginBottom: spacing.md }} />
             <Text style={[styles.emptyText, { color: themeColors.text }]}>No habits set yet</Text>
             <Text style={[styles.emptySubtitle, { color: themeColors.textMuted }]}>
               Tap the "+" button below to build your first routine.

@@ -19,6 +19,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { subscribeToHabits, subscribeToCompletions, toggleHabitCompletion } from '@/lib/habitsService';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { syncNotifications } from '@/lib/notificationsManager';
+import * as Haptics from 'expo-haptics';
+import { calculateCurrentStreak } from '@/lib/streakCalculator';
 
 const getTodayString = () => {
   const date = new Date();
@@ -97,6 +99,28 @@ export default function TodayScreen() {
 
     const isCompleted = completedIds.includes(habit.id);
     
+    // Trigger Haptic Feedback
+    try {
+      if (!isCompleted) {
+        // User checking off: check if this is a milestone (new streak count)
+        const tempCompletions = [...(habit.completions || []), todayStr];
+        const newStreak = calculateCurrentStreak(tempCompletions);
+        
+        if (newStreak === 7 || newStreak === 30 || newStreak === 100) {
+          // Play special success milestone vibration pattern
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } else {
+          // Normal success check-off vibration
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }
+      } else {
+        // Uncheck vibration
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (e) {
+      console.warn("Failed to trigger haptic feedback:", e);
+    }
+
     try {
       // Toggle in Firestore database (this updates the completions collection and habit streak)
       await toggleHabitCompletion(
@@ -200,7 +224,7 @@ export default function TodayScreen() {
         
         {habits.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="sparkles-outline" size={48} color={themeColors.textMuted} />
+            <Ionicons name="sparkles-outline" size={64} color={themeColors.textMuted} style={{ marginBottom: spacing.md }} />
             <Text style={[styles.emptyText, { color: themeColors.text }]}>All clear for today</Text>
             <Text style={[styles.emptySubtitle, { color: themeColors.textMuted }]}>
               There are no habits scheduled for today. Add routines in the Habits tab!
