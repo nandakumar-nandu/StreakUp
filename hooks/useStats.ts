@@ -25,6 +25,7 @@ export interface UseStatsResult {
   }[];
   totalCompletionsThisMonth: number;
   bestDayOfWeek: string;
+  habits: Habit[];
 }
 
 /**
@@ -77,7 +78,8 @@ export function useStats(): UseStatsResult {
       topHabits: [],
       streakLeaderboard: [],
       totalCompletionsThisMonth: 0,
-      bestDayOfWeek: 'None'
+      bestDayOfWeek: 'None',
+      habits: []
     };
   }
 
@@ -230,6 +232,7 @@ export function useStats(): UseStatsResult {
     topHabits,
     streakLeaderboard,
     totalCompletionsThisMonth,
-    bestDayOfWeek
+    bestDayOfWeek,
+    habits
   };
 }

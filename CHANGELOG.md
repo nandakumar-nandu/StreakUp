@@ -2,6 +2,29 @@
 
 All notable changes to the **StreakUp** project will be documented in this file.
 
+## [1.2.0] - 2026-07-17 13:55 (Asia/Kolkata)
+
+### Added
+- Integrated first-launch step-by-step Onboarding flow screens (`/(onboarding)/` routes: welcome, goal selection, AI starter suggestions, target schedule slots, notifications permissions, done celebration confetti).
+- Developed AI Habit Coach module (`/lib/aiCoach.ts`) with custom OpenAI prompts and robust static offline fallbacks.
+- Integrated AI Coach chat conversation panel inside the Stats tab, caching the past 5 messages locally in `AsyncStorage`.
+- Created smart local `insightsEngine.ts` analytics computing Momentum scores (rolling 7-day consistency), At Risk warnings, Best Time of Day habits, and Personal Bests.
+- Upgraded the Today tab with Momentum Score color-coded cards, At Risk amber alert warnings, and Coach Tip panel.
+- Added collapsible Weekly AI Insight cards, Momentum trend sparkline, and Personal Best badges on the Stats Screen.
+- Implemented client-side daily rate limits (max 10 AI requests/day) and cache layers in `/hooks/useAICoach.ts`.
+- Conducted full accessibility pass adding `accessibilityLabel`, `accessibilityHint`, `accessibilityRole` on all UI segments, and documented color contrast standards.
+- Documented LLM configurations, prompt designs, and local Ollama swaps in `AI_COACH_GUIDE.md`.
+
+## [1.1.0] - 2026-07-17 13:46 (Asia/Kolkata)
+
+### Added
+- Developed complete Social Accountability sub-system (`app/(tabs)/social.tsx`) containing real-time Friend list observers, user email/name search prefix queries, and bidirectional Friend Request inbox buttons.
+- Created global leaderboards comparing active habit streaks and completion rates, filterable between "Global Top 10" and "Friends".
+- Integrated Streak Challenges head-to-head duels (7, 14, 30 days durations) displaying completion ratios, declaring winners, and syncing checklists reactively.
+- Added Long-press card Alert triggers to set Habit sharing visibilities (Private, Friends, Public) inside Firestore.
+- Added profile privacy, request limits, and streak visibility toggles inside Settings tab dashboard.
+- Created `SOCIAL_ARCHITECTURE.md` explaining schemas, request status state charts, and denormalized caching performance trade-offs.
+
 ## [1.0.0] - 2026-07-17 13:45 (Asia/Kolkata)
 
 ### Added

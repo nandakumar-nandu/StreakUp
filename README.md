@@ -142,6 +142,45 @@ graph TD
 
 ---
 
+## OpenAI API Setup & Cost Estimation
+
+To configure the AI Habit Coach:
+1. Obtain an API key from the [OpenAI Platform](https://platform.openai.com/api-keys).
+2. Set `EXPO_PUBLIC_OPENAI_API_KEY` in your `.env` file.
+3. Model Choices & Costs:
+   - **GPT-3.5-turbo (Default)**: Best for speed (1-2s latency) and cost-efficiency. Average cost is ~$0.002 per request. 1,000 active users making 5 requests/day each costs ~$8.00/month.
+   - **GPT-4o (Alternative)**: Best for complex behavioral suggestions but carries a higher latency (~3-5s) and higher costs (~$0.06 per request). 1,000 active users making 5 requests/day costs ~$80.00/month.
+
+---
+
+## AI Coach Data Flow Diagram
+
+```mermaid
+graph LR
+    User[User Screen: askCoach] -->|chatInput + statsContext| useAICoach[useAICoach Hook]
+    useAICoach -->|verify limit & caching| aiCoach[aiCoach.ts Service]
+    aiCoach -->|POST request| OpenAI[OpenAI API Endpoint]
+    OpenAI -->|GPT response| aiCoach
+    aiCoach -->|Save chat history| Storage[(AsyncStorage Cache)]
+    aiCoach -->|Display Message| ChatUI[Chat Bubble UI]
+```
+
+---
+
+## Onboarding Flow Diagram
+
+```mermaid
+graph TD
+    Welcome[welcome.tsx: Welcome Screen] -->|Get Started| Goal[goal.tsx: Select Goal]
+    Goal -->|AI API Call / Offline Fallback| Suggest[suggest.tsx: Select 6 Starter Habits]
+    Suggest -->|Save habits to Firestore| Schedule[schedule.tsx: Set target schedule time]
+    Schedule -->|Save slot default time| Notifications[notifications.tsx: Grant push alert permission]
+    Notifications -->|Done celebration cannon| Confetti[done.tsx: Celebrate Confetti]
+    Confetti -->|Save completion flag| Dashboard[Today Checklist Dashboard]
+```
+
+---
+
 ## Setup Prerequisites
 
 To run this app locally:

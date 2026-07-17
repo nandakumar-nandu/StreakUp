@@ -109,3 +109,36 @@ graph TD
   - *Challenge Proposal Modal*:
     - Modal popup choosing target habit names and duration periods (7, 14, 30 days) to launch invitations.
 
+### 7. Onboarding Flow (`app/(onboarding)/`)
+- **Visuals**: Full-screen layouts with visual iconography, segment toggles, progress buttons, and celebrations.
+- **Content**:
+  - *Welcome Screen (`welcome.tsx`)*: Tagline, app description, and primary "Get Started" call-to-action button.
+  - *Goal Screen (`goal.tsx`)*: Card grid representing core goals (Health, Productivity, Mindfulness, Fitness, Learning) with check indicators.
+  - *Suggestions Screen (`suggest.tsx`)*: Renders 6 checklist habits suggested by the AI coach. Displays loading indicators during API requests.
+  - *Scheduling Screen (`schedule.tsx`)*: Timed slots (Morning, Afternoon, Evening, Flexible) specifying default reminder parameters.
+  - *Permissions Screen (`notifications.tsx`)*: Informational summary detailing notification systems, with Allow and Skip buttons.
+  - *Done Celebration Screen (`done.tsx`)*: Celebrates completion by dropping animated confetti (using `react-native-confetti-cannon`).
+
+### 8. AI Coach Chat Screen (`app/(tabs)/stats.tsx` sub-screen)
+- **Visuals**: Chat client with profile headers, past conversations, and type bars.
+- **Content**:
+  - *Coach Header*: Renders the coach sparkles avatar, and a trash icon to clear local messages.
+  - *Chat Bubble list*: Right-aligned user bubbles (coral background, white text) and left-aligned coach bubbles (light gray card background).
+  - *Message TextInput*: Bar containing prompt text inputs and a rounded send button.
+  - *Skeleton loader*: Displays loading indicators when waiting for responses.
+
+### 9. Today Screen v2 (`app/(tabs)/index.tsx`)
+- **Visuals**: Upgraded dashboard introducing local metrics and smart alert warnings.
+- **Content**:
+  - *At Risk warning strip*: Yellow amber alerts positioned above checklists warning: "⚠️ Your [habit] streak is at risk!".
+  - *Momentum Score Card*: Rolling 7-day consistency dial (0-100) mapped to Red (<40), Amber (40-70), and Green (>70) boundaries.
+  - *Coach Tip card*: Daily motivational tip.
+
+### 10. Stats Screen v2 (`app/(tabs)/stats.tsx`)
+- **Visuals**: Enhanced analytics dashboard.
+- **Content**:
+  - *Collapsible AI Weekly Insight*: Collapsed card showing AI habit tips that expands/collapses smoothly when tapped.
+  - *Momentum sparkline*: Line chart displaying rolling 7-day consistency trend.
+  - *Personal Best badge*: Highlight trophy row indicating your longest active streak.
+
+

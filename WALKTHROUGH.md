@@ -184,8 +184,36 @@ StreakUp version 1.1.0 builds a social accountability structure:
    - Utilizes a tie-breaking algorithm (Streaks desc -> Completion rate desc -> Alphabetical name).
    - Updates denormalized leaderboard entries in real-time as users check off public habits.
 
-3. **Streak Challenges (Duels)**:
-   - Challenge friends to habit duels (7, 14, or 30 days) to track the same habit.
-   - Visual progress bars comparing head-to-head completions in real-time.
-   - Dynamically calculates remaining duration and automatically declares the winner/tie once the window closes.
-   - Automatically synchronizes check-offs from the main Today checklist to progress records.
+    - Automatically synchronizes check-offs from the main Today checklist to progress records.
+
+---
+
+## Onboarding, AI Coach, & Smart Insights (Commit 10) - 🚀 v1.2.0 Complete
+
+StreakUp version 1.2.0 introduces first-launch guidance, AI habit intelligence, and local performance analysis:
+
+1. **Step-by-Step Onboarding Flow**:
+   - Welcome Screen: Tagline and onboarding initialization triggers.
+   - Goal Configuration: Collects primary user goals (Health, Productivity, Mindfulness, Fitness, Learning).
+   - Starter Suggestions: Dynamically presents 6 customized habits suggested by the AI Coach. Checking items writes them directly to the user's Firestore routines database.
+   - Target Slots scheduling: Set default daily reminder times based on target periods (Morning, Afternoon, Evening, Flexible).
+   - Confetti Celebration: Confetti Cannon drops upon completion, setting the permanent `AsyncStorage` flag preventing re-launch showing. Users can trigger a reset in settings.
+
+2. **AI Habit Coach**:
+   - Integrates secure OpenAI completion endpoints to suggest starter routines, analyze weak days, write weekly insights, and generate milestone motivation quotes.
+   - Stores user conversation histories locally inside AsyncStorage to prevent database bloat.
+   - Enforces a client-side limit of **10 requests per user per day** with cache configurations.
+   - Integrates a chat interface sub-tab directly into the Stats screen, including text fields and skeleton loaders.
+
+3. **Smart Insights Local Engine**:
+   - Runs calculations locally on-device without cloud costs.
+   - Momentum Score: rolling 7-day consistency level (0-100) mapped to color-coded cards (Red/Amber/Green).
+   - At Risk Warnings: displays amber warnings above unchecked habits with streaks > 5.
+   - Best Time of Day: identifies user productivity hours from completion timestamps.
+   - Personal Best: badge highlighting their longest active habit streak.
+   - Displays insights on Today checklist header and Stats panels, using Reanimated for collapsible AI insight banners.
+
+4. **Accessibility Overlays**:
+   - Added standard screen reader accessibility tags (`accessibilityLabel`, `accessibilityHint`, `accessibilityRole`, and `accessibilityState`) to every interface element and card throughout the application.
+   - Documented WCAG AA/AAA contrast ratios for light and dark schemes.
+

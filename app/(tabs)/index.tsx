@@ -21,6 +21,8 @@ import ConfettiCannon from 'react-native-confetti-cannon';
 import { syncNotifications } from '@/lib/notificationsManager';
 import * as Haptics from 'expo-haptics';
 import { calculateCurrentStreak } from '@/lib/streakCalculator';
+import { useInsights } from '@/hooks/useInsights';
+import { analyzeWeakDay } from '@/lib/aiCoach';
 
 const getTodayString = () => {
   const date = new Date();
@@ -93,6 +95,27 @@ export default function TodayScreen() {
     }
     prevAllCompleted.current = allCompleted;
   }, [allCompleted]);
+
+  // AI & Local Insights Engine Queries
+  const { bestTimeOfDay, atRiskHabits, momentumScore, personalBest } = useInsights(habits, completedIds);
+  const [coachTip, setCoachTip] = useState<string>("Plan your routines early to keep your streaks burning!");
+
+  useEffect(() => {
+    if (!user || habits.length === 0) return;
+    
+    // Fetch a weak-day analysis motivational tip dynamically on load from the AI Coach
+    const allComps = habits.flatMap(h => h.completions || []);
+    analyzeWeakDay(allComps).then((tip) => {
+      setCoachTip(tip);
+    }).catch(err => console.log("Error loading coach tip:", err));
+  }, [user, habits]);
+
+  // Color interpolation logic: maps momentum range strictly into red (<40), amber (40-70), and green (>70) tiers
+  const getMomentumColor = (score: number) => {
+    if (score < 40) return '#FF4757'; // Red
+    if (score <= 70) return '#FFA502'; // Amber
+    return '#2ED573'; // Green
+  };
 
   const handleToggleComplete = async (habit: Habit) => {
     if (!user) return;
@@ -218,6 +241,66 @@ export default function TodayScreen() {
             </View>
           </View>
         )}
+
+        {/* Rolling Momentum Score Card */}
+        {habits.length > 0 && (
+          <View 
+            style={[styles.momentumCard, { backgroundColor: themeColors.card, borderColor: themeColors.border, ...shadows.sm }]}
+            accessibilityRole="text"
+            accessibilityLabel={`Momentum score is ${momentumScore} out of 100`}
+            accessibilityHint="Measures rolling 7-day completion consistency"
+          >
+            <View style={[styles.momentumBadge, { backgroundColor: getMomentumColor(momentumScore) + '1A' }]}>
+              <Ionicons name="flame" size={24} color={getMomentumColor(momentumScore)} />
+            </View>
+            <View style={styles.momentumDetails}>
+              <Text style={[styles.momentumTitle, { color: themeColors.text }]}>Momentum Score</Text>
+              <Text style={[styles.momentumSubtitle, { color: themeColors.textMuted }]}>
+                Rolling 7-day consistency level
+              </Text>
+            </View>
+            <View style={styles.momentumScoreArea}>
+              <Text style={[styles.momentumScoreVal, { color: getMomentumColor(momentumScore) }]}>
+                {momentumScore}
+              </Text>
+              <Text style={[styles.momentumScoreMax, { color: themeColors.textMuted }]}>/100</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Coach Tip of the Day Panel */}
+        {habits.length > 0 && (
+          <View 
+            style={[styles.coachCard, { backgroundColor: themeColors.card, borderColor: themeColors.border, ...shadows.sm }]}
+            accessibilityRole="summary"
+            accessibilityLabel={`Coach Tip: ${coachTip}`}
+          >
+            <View style={styles.coachHeader}>
+              <View style={[styles.coachAvatar, { backgroundColor: colors.primary.light }]}>
+                <Ionicons name="sparkles" size={14} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.coachTitle, { color: themeColors.text }]}>Coach Tip of the Day</Text>
+            </View>
+            <Text style={[styles.coachBody, { color: themeColors.textMuted }]}>
+              "{coachTip}"
+            </Text>
+          </View>
+        )}
+
+        {/* At Risk Warnings Strip */}
+        {atRiskHabits.length > 0 && atRiskHabits.map(habit => (
+          <View 
+            key={habit.id} 
+            style={[styles.warningStrip, { backgroundColor: 'rgba(255, 165, 2, 0.12)', borderColor: '#FFA502' }]}
+            accessibilityRole="alert"
+            accessibilityLabel={`Streak warning: Your ${habit.name} streak is at risk`}
+          >
+            <Ionicons name="warning" size={18} color="#FFA502" style={{ marginRight: spacing.sm }} />
+            <Text style={[styles.warningText, { color: themeColors.text }]}>
+              ⚠️ Your <Text style={{ fontWeight: 'bold' }}>{habit.name}</Text> streak is at risk!
+            </Text>
+          </View>
+        ))}
 
         {/* Habit List Section */}
         <Text style={[styles.listHeader, { color: themeColors.textMuted }]}>TODAY'S CHECKLIST</Text>
@@ -425,5 +508,84 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.bodyMedium,
     textAlign: 'center',
     paddingHorizontal: spacing.xl,
+  },
+  warningStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.md,
+  },
+  warningText: {
+    fontSize: 13,
+    flex: 1,
+  },
+  momentumCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.xl,
+  },
+  momentumBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  momentumDetails: {
+    flex: 1,
+  },
+  momentumTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  momentumSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  momentumScoreArea: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  momentumScoreVal: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  momentumScoreMax: {
+    fontSize: 12,
+  },
+  coachCard: {
+    padding: spacing.lg,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    marginBottom: spacing.xl,
+  },
+  coachHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  coachAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  coachTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  coachBody: {
+    fontSize: 13,
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
 });

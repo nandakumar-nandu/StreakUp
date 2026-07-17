@@ -8,7 +8,8 @@ import {
   SafeAreaView, 
   Switch,
   ActivityIndicator,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { useColorScheme, useThemeOverride, ThemeType } from '@/hooks/useColorScheme';
 import { colors, spacing, borderRadius, typography, shadows } from '@/constants/theme';
@@ -155,6 +156,29 @@ export default function SettingsScreen() {
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  const handleRedoOnboarding = async () => {
+    Alert.alert(
+      "Reset Onboarding",
+      "Are you sure you want to run the first-launch setup onboarding flow again?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Reset", 
+          style: "destructive", 
+          onPress: async () => {
+            try {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+              await AsyncStorage.removeItem('streakup_onboarding_completed');
+              // The AuthGuard will automatically pick up the missing flag and redirect to welcome!
+            } catch (e) {
+              console.error(e);
+            }
+          } 
+        }
+      ]
+    );
   };
 
   const handleUpdatePrivacy = async (key: string, value: any) => {
@@ -408,9 +432,22 @@ export default function SettingsScreen() {
         <Text style={[styles.sectionTitle, { color: themeColors.textMuted }]}>ACCOUNT</Text>
         <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, ...shadows.sm, paddingHorizontal: 0 }]}>
           <TouchableOpacity 
+            style={[styles.logoutButtonRow, { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: themeColors.border }]}
+            onPress={handleRedoOnboarding}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Redo first-launch onboarding setup"
+            accessibilityHint="Launches the step-by-step app setup screens again"
+          >
+            <Ionicons name="refresh-circle-outline" size={20} color={themeColors.text} style={{ marginRight: spacing.md }} />
+            <Text style={[styles.logoutText, { color: themeColors.text }]}>Redo Onboarding</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
             style={styles.logoutButtonRow}
             onPress={handleLogout}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out of StreakUp"
           >
             <Ionicons name="log-out-outline" size={20} color="#FF4757" style={{ marginRight: spacing.md }} />
             <Text style={styles.logoutText}>Log Out</Text>
@@ -420,7 +457,7 @@ export default function SettingsScreen() {
         {/* Version info footer */}
         <View style={styles.versionFooter}>
           <Text style={[styles.versionText, { color: themeColors.textMuted }]}>
-            ⚙️ StreakUp Version 0.7.0 (Notifications Integrated)
+            ⚙️ StreakUp Version 1.2.0 (AI Coach & Insights)
           </Text>
         </View>
       </ScrollView>
