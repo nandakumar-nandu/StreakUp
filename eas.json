@@ -16,7 +16,10 @@
     // Preview profile: builds release builds for internal testing without development client overhead
     "preview": {
       // Sets distribution method to internal for sharing APK files directly
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     },
     // Production profile: optimized release build compiled with production credentials and optimizations
     "production": {

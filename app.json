@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "StreakUp",
-    "slug": "StreakUp",
+    "slug": "streakup",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -33,11 +33,20 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2f3f7717-2f21-498f-ab53-dfb78c02ea47"
+      }
     }
   }
 }

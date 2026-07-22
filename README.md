@@ -1,6 +1,71 @@
-# StreakUp — Habit and Fitness Tracker
+<p align="left">
+  <img src="./assets/logo.svg" alt="StreakUp Logo" width="420" />
+</p>
 
 StreakUp is a premium, high-aesthetic React Native application designed to help users track their habits, schedule workouts, monitor progress, and build streaks. Built using Expo TypeScript, Firebase (Auth + Firestore), and React Native Reanimated.
+
+
+### 📱 Direct Android APK Download
+
+Scan this QR code on your Android device to download and install the APK directly:
+
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://expo.dev/accounts/kpebble/projects/streakup/builds/1e05632e-cc34-45a0-b3fc-33418398e7d6" alt="APK Download QR Code" />
+  <br/>
+  <a href="https://expo.dev/accounts/kpebble/projects/streakup/builds/1e05632e-cc34-45a0-b3fc-33418398e7d6">Direct Link to Download APK</a>
+</p>
+
+
+
+<table table-layout="fixed" width="100%">
+  <tr>
+    <td align="center" width="33%">
+      <strong>Login / Auth</strong><br/>
+      <img src="./assets/screenshots/Login.jpg" alt="Login & Register" />
+    </td>
+    <td align="center" width="33%">
+      <strong>Habits & Creation</strong><br/>
+      <img src="./assets/screenshots/Habit.jpg" alt="Habits Management" />
+    </td>
+    <td align="center" width="33%">
+      <strong>Social & Friends</strong><br/>
+      <img src="./assets/screenshots/Social.jpg" alt="Social Feed" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <strong>Streakboard</strong><br/>
+      <img src="./assets/screenshots/Streakboard.jpg" alt="Streakboard Checklist" />
+    </td>
+    <td align="center" width="33%">
+      <strong>Analytics & Stats</strong><br/>
+      <img src="./assets/screenshots/Stats.jpg" alt="Statistics & Charts" />
+    </td>
+    <td align="center" width="33%">
+      <strong>Settings & Profile</strong><br/>
+      <img src="./assets/screenshots/Settings.jpg" alt="User Settings" />
+    </td>
+  </tr>
+</table>
+
+<details open>
+  <summary>🎥 Video Walkthrough</summary>
+  <br/>
+  <p align="center">
+    <video src="./assets/screenshots/Walkthrough.mp4" controls width="240" muted autoplay loop></video>
+  </p>
+</details>
+
+## Tech Stack 
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Expo-57.0.7-black?style=for-the-badge&logo=expo" alt="Expo" />
+  <img src="https://img.shields.io/badge/React_Native-0.86.0-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React Native" />
+  <img src="https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Firebase-10.0.0-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
+  <img src="https://img.shields.io/badge/Reanimated-4.5.0-FF5E6C?style=for-the-badge&logo=react&logoColor=white" alt="React Native Reanimated" />
+  <img src="https://img.shields.io/badge/SVG-15.0.0-FFB000?style=for-the-badge&logo=svg&logoColor=white" alt="React Native SVG" />
+</p>
 
 ---
 
@@ -78,10 +143,10 @@ graph TD
     habitDoc --> hEmoji[emoji: string]
     habitDoc --> hColor[color: string]
     habitDoc --> hFreq[frequency: string]
-    habitDoc --> hRemind[reminderTime: string | null]
+    habitDoc --> hRemind[reminderTime: string &#124; null]
     habitDoc --> hCreated[createdAt: string]
     habitDoc --> hStreak[streak: number]
-    habitDoc --> hCompletions[completions: string[] -- cached dates]
+    habitDoc --> hCompletions[completions: string&#91;&#93; -- cached dates]
     habitDoc --> hPublic[isPublic: boolean]
     habitDoc --> hVis[visibility: string]
     
@@ -105,7 +170,7 @@ graph TD
     challengeDoc --> cCreator[creatorId: string]
     challengeDoc --> cOpponent[opponentId: string]
     challengeDoc --> cStatus[status: string]
-    challengeDoc --> cComps[creatorCompletions / opponentCompletions: string[]]
+    challengeDoc --> cComps[creatorCompletions / opponentCompletions: string&#91;&#93;]
     
     rootLeaderboards[friendLeaderboards Collection] --> lbHabit[Habit Document: habitName]
     lbHabit --> lbEntries[entries Subcollection]
