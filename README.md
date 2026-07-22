@@ -1,3 +1,4 @@
+
 <p align="left">
   <img src="./assets/logo.svg" alt="StreakUp Logo" width="420" />
 </p>
@@ -52,7 +53,7 @@ Scan this QR code on your Android device to download and install the APK directl
   <summary>🎥 Video Walkthrough</summary>
   <br/>
   <p align="center">
-    <video src="./assets/screenshots/Walkthrough.mp4" controls width="240" muted autoplay loop></video>
+    <video src="https://github.com/user-attachments/assets/727aa07f-5810-49ba-8362-761419013a4a" controls width="240" muted autoplay loop></video>
   </p>
 </details>
 
